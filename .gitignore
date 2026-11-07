@@ -5,8 +5,10 @@ __pycache__/
 .venv/
 .pytest_cache/
 
-# Výstupy experimentov
-results/
+# Inštancie sa dajú presne znova vygenerovať: python src/generate_instances.py
+instances/generated/
+
+# Výsledky experimentov (results/, reference/) SA do gitu dávajú – sú súčasťou odovzdávky.
 
 # LaTeX
 report/*.aux

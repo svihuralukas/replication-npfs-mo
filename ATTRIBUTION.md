@@ -9,8 +9,16 @@ a čo sme vytvorili alebo upravili my. Tento súbor priebežne dopĺňame.
   hodnoty parametrov (`d = min{8, 0.8n}`, `α = 0.234375`, `15000/n` iterácií),
   metrika relatívnej odchýlky od najlepších známych hodnôt.
 - Výsledky v `data/paper_results/` sú prepísané z tabuliek 3, 4 a 6 článku.
-- Pôvodný C++ kód: https://github.com/mrpritt/npfs-mo. *(Ak z neho niečo použijeme alebo ho
-  spustíme ako referenciu, uvedieme to tu.)*
+- Pôvodný C++ kód: https://github.com/mrpritt/npfs-mo. Použitie:
+  - **ako referencia:** skompilovaný program `npfsmo` spúšťame na našich inštanciách
+    (`reference/run_authors.py`, `reference/make_eval_fixture.py`); jeho výstupy sú v
+    `reference/*.csv` a `tests/data/`. Jeho kód nie je súčasťou nášho riešenia ani skopírovaný.
+  - **na doplnenie detailov, ktoré článok neuvádza** (štartovacie riešenie, ⌈0.8n⌉, pravidlo pre
+    zhodu pri vkladaní, local search po pozíciách, limit + 1 iterácií) – zoznam v `docs/PLAN.md`
+    a v hlavičke `src/iga.py`. Implementácia je napísaná nanovo v Pythone.
+  - **formát inštancií** podľa ich `instance.cpp` (aby ich program čítal naše inštancie).
+- Výsledky po inštanciách (`npfs-mo/data/table2.csv`) sme použili na zistenie, koľko operácií
+  v originálnych inštanciách chýba, a na porovnanie našich inštancií s originálmi.
 
 ## Z iných zdrojov
 

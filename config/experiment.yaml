@@ -1,17 +1,18 @@
 # Parametre experimentov. Hodnoty algoritmu podľa Ritt & Rossit (2024), sekcia 5.1.
+# Pozn.: zatiaľ ich číta len src/iga.py cez predvolené hodnoty IGAParams;
+# napojenie runnera na tento súbor príde s plnými experimentmi (krok 6/7 plánu).
 
 instances:
-  dir: data/instances
+  dir: instances/generated
   n: [5, 10, 20, 30, 50, 100]
   m: [5, 10, 20, 30]
   r: [0.2, 0.3, 0.4]
   per_group: 30            # znížiť, ak bude výpočet príliš pomalý (zdokumentovať v reporte)
 
 algorithm:
-  d_max: 8                 # d = min(d_max, d_frac * n)
-  d_frac: 0.8
+  d_max: 8                 # d = min(d_max, ceil(0.8 n))  – v kóde autorov (8n + 9) // 10
   alpha: 0.234375          # T = alpha * p_mean / 10
-  iterations_factor: 15000 # počet iterácií fázy 1 = iterations_factor / n
+  iter_factor: 0.1         # limit iterácií fázy 1 = iter_factor * 150000 / n = 15000 / n
   phase2: nonperm          # nonperm | none (IGA0) | nps_set (IGA+NPS-set)
 
 experiment:

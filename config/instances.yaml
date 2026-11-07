@@ -1,0 +1,13 @@
+# Generovanie inštancií podľa Ritt & Rossit (2024), Sekcia 5.1
+# (rovnaký postup ako Henneberg & Neufeld, 2016).
+
+base_seed: 2026            # hlavný seed; každá inštancia má z neho odvodený vlastný generátor
+output_dir: instances/generated
+
+n_values: [5, 10, 20, 30, 50, 100]   # počet jobov
+m_values: [5, 10, 20, 30]            # počet strojov
+r_values: [0.2, 0.3, 0.4]            # miera chýbajúcich operácií
+instances_per_group: 30              # 6 * 4 * 3 * 30 = 2160 inštancií ako v článku
+
+p_min: 1                   # časy spracovania z U[p_min, p_max] (Taillard, 1990)
+p_max: 99
