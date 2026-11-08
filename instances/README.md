@@ -27,7 +27,8 @@ python src/generate_instances.py          # parametre v config/instances.yaml
   odvodený z (base_seed, r, n, m, i), takže sa dá zregenerovať nezávisle od ostatných.
   Na inom počítači vzniknú bit po bite rovnaké súbory.
 
-Generované inštancie nie sú v gite (`.gitignore`), dajú sa kedykoľvek presne zopakovať.
+Generované inštancie sú v gite (`instances/generated/`, ~14 MB), aby všetci pracovali s rovnakými súbormi.
+Dajú sa aj kedykoľvek presne zopakovať generátorom.
 
 ## Formát súboru
 

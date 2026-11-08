@@ -93,7 +93,7 @@ analysis/           analýza výsledkov (porovnania, štatistiky, grafy)
 config/             parametre (generovanie inštancií, experimenty)
 data/paper_results/ výsledky autorov prepísané z článku (Tab. 3, 4, 6)
 docs/PLAN.md        plán, metodológia
-instances/          inštancie: generated/ (naše, nie sú v gite), original/ (H&N, ak ich dostaneme)
+instances/          inštancie: generated/ (naše), original/ (H&N, ak ich dostaneme)
 reference/          spúšťanie programu autorov a jeho výsledky na našich inštanciách
 report/             záverečný report (LaTeX)
 results/            výsledky našich experimentov (CSV, sú v gite)
