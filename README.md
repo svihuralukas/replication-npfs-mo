@@ -93,7 +93,7 @@ python analysis/compare_iga0.py            # porovnanie + Wilcoxonov test
 | IGA fáza 2 (non-permutation) | `src/nonperm.py` | hotové, z permutácie autorov presne ten istý rozvrh (86 inštancií zo všetkých 72 skupín) |
 | NPS-set | `src/nps_set.py` | hotové, presná zhoda s kódom autorov (86 inštancií + konštrukcia na všetkých) |
 | MIP (optimá pre n = 5) | `src/mip.py` | hotové, HiGHS namiesto CPLEX-u; Obr. 3 → 1191 |
-| Konfigurácia experimentov, plné experimenty | `config/experiment.yaml`, `results/`, `reference/iga_authors.csv` | seedy 1–3 na všetkých inštanciách hotové, seedy 4–10 pre n ≤ 50 dobiehajú |
+| Konfigurácia experimentov, plné experimenty | `config/experiment.yaml`, `results/`, `reference/iga_authors.csv` | hotové: seedy 1–10 pre n ≤ 50, 1–3 pre n = 100 |
 | Analýza | `analysis/analyze_results.py`, `results/analysis/` | hotové |
 | Report | `report/main.tex` | návrh, treba skontrolovať tímom |
 

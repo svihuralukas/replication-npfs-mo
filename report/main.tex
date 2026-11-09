@@ -27,11 +27,11 @@ sme nezávisle implementovali v Pythone a spustili na 2160 inštanciách vygener
 Henneberga a Neufelda; na rovnakých dátach sme spustili aj pôvodný C++ program autorov
 a pre $n=5$ sme MIP modelom z článku vypočítali optimá. Deterministické časti našej
 implementácie sa s programom autorov zhodujú presne (vrátane celých nepermutačných rozvrhov),
-výsledky náhodných častí sa štatisticky nelíšia (Wilcoxon, $p>0{,}4$). Kľúčové tvrdenia článku
+výsledky náhodných častí sa štatisticky nelíšia (Wilcoxon, $p\ge 0{,}09$). Kľúčové tvrdenia článku
 sa potvrdili: 2. fáza zlepšuje permutačné riešenia v priemere o 1,33 percentuálneho bodu
 (článok 1,32), NPS-set o 0,49 (článok 0,48) a na inštanciách s $n=5$ je IGA od optima
-v priemere 1,20\,\% (článok 1,26\,\%). Absolútne odchýlky pre $n\ge 10$ sú u nás menšie, lebo
-nemáme referenčné hodnoty z MIP s CPLEX-om a 2SA; čas behu je na našom hardvéri asi dvojnásobný.
+v priemere 1,20\,\% (článok 1,26\,\%). Absolútne odchýlky pre $n\ge 10$ sa s článkom porovnať nedajú,
+lebo naše najlepšie známe hodnoty pochádzajú z iných metód a iného počtu behov; čas behu je na našom hardvéri asi dvojnásobný.
 \end{abstract}
 
 % =====================================================================================
@@ -179,7 +179,7 @@ spustené z permutácie, ktorú našiel program autorov, dávajú na 86 inštanc
 \item \textbf{BKV.} Článok berie BKV aj z 2SA, IGA$^+$ a MIP s CPLEX-om. My ich berieme zo všetkých
   našich behov (obe implementácie, všetky seedy a varianty) a z MIP pre $n=5$. Pre $n\ge 10$ sú
   naše BKV preto slabšie a odchýlky systematicky menšie.
-\item \textbf{Seedy.} Autori použili jeden seed; my spúšťame každý experiment so seedmi 1--3 pre všetky inštancie.
+\item \textbf{Seedy.} Autori použili jeden seed; my spúšťame každý experiment so seedmi 1--10 pre $n\le 50$ a 1--3 pre $n=100$.
 \item \textbf{Jazyk a hardvér.} Python + Numba namiesto C++, iný procesor (Intel Core i5-6300U, notebook), 4 paralelné
   procesy. Časy nie sú priamo porovnateľné.
 \item \textbf{Generátor náhodných čísel} je iný (NumPy PCG64 vs.\ \texttt{std::mt19937}), preto
@@ -199,7 +199,7 @@ $15000/n$ iterácií 1.~fázy; sú v súbore \texttt{config/\allowbreak experime
 IGA+NPS-set aj IGA (rovnako ako program autorov), takže varianty sa porovnávajú na tej istej
 permutácii z 1.~fázy.
 
-\paragraph{Opakovania.} Každý experiment sme spustili so seedmi 1--3 pre všetky inštancie
+\paragraph{Opakovania.} Každý experiment sme spustili so seedmi 1--10 pre $n\le 50$ a 1--3 pre $n=100$
 (autori: jeden seed 1). Pre každú inštanciu porovnávame len seedy, ktoré prebehli v oboch
 implementáciách. Behy prebiehali na notebooku s procesorom Intel Core i5-6300U (2 jadrá,
 4 vlákna, 2,4\,GHz), 4 paralelné procesy; program autorov v Dockeri (Ubuntu 24.04, gcc,
@@ -237,9 +237,9 @@ a korelácia ich výsledkov cez 72 skupín je 0,97--1,00.
 \label{fig:rpd}
 \end{figure}
 
-\paragraph{Prínos 2.~fázy a NPS-set.} 2.~fáza zlepšila výsledok 1.~fázy v 89,6\,\% behov
-a nikdy ho nezhoršila; NPS-set zlepšil permutáciu v 58,9\,\% behov. IGA bolo lepšie než
-IGA+NPS-set v 82,7\,\% behov a horšie v 6,5\,\%. Všetky tri rozdiely sú štatisticky
+\paragraph{Prínos 2.~fázy a NPS-set.} 2.~fáza zlepšila výsledok 1.~fázy v 88,2\,\% behov
+a nikdy ho nezhoršila; NPS-set zlepšil permutáciu v 55,7\,\% behov. IGA bolo lepšie než
+IGA+NPS-set v 80,8\,\% behov a horšie v 6,9\,\%. Všetky tri rozdiely sú štatisticky
 významné (Wilcoxon, $p<10^{-10}$). Zlepšenie oproti IGA0 klesá s $n$ (pre IGA z 2,27 p.\,b.\ pri
 $n=5$ na 0,73 p.\,b.\ pri $n=100$), lebo pri väčšom počte jobov pripadá na jeden job menej
 medzier, ktoré sa dajú zaplniť.
@@ -293,9 +293,10 @@ inštancií s daným $n$).}\label{fig:seed}
 \section{Porovnanie s výsledkami autorov}
 \paragraph{Program autorov na našich dátach.} Toto je najsilnejšie porovnanie, lebo vylučuje
 vplyv inštancií aj BKV. Wilcoxonov test na priemeroch cez seedy (pár = inštancia, 2160 párov)
-nezamieta zhodu pre IGA0 ($p=0{,}47$), IGA+NPS-set ($p=0{,}82$) ani IGA ($p=0{,}64$);
-počty inštancií, kde je naša implementácia lepšia a horšia, sú vyrovnané. Zhodu sme teda
-dosiahli nielen v priemere, ale aj v rozdelení výsledkov.
+nezamieta na hladine 0,05 zhodu pre IGA0 ($p=0{,}12$), IGA+NPS-set ($p=0{,}20$) ani IGA
+($p=0{,}089$). Pri IGA je naša implementácia horšia na mierne viac inštanciách (661) než lepšia
+(595), rozdiel priemerov je však najviac 0,03 p.\,b.\ v ktorejkoľvek veľkosti -- rádovo menej
+než rozptyl medzi seedmi. Zhodu sme teda dosiahli v priemere aj v rozdelení výsledkov.
 
 \paragraph{Tabuľky článku.} Hodnoty z článku sú na \emph{originálnych} inštanciách a s inými
 BKV, preto sa dajú porovnať len trendy a veličiny nezávislé od BKV:
@@ -308,13 +309,16 @@ BKV, preto sa dajú porovnať len trendy a veličiny nezávislé od BKV:
 \item \textbf{$n=5$}: BKV článku sú tu optimá (MIP vyriešil všetky inštancie), naše tiež
   (356 z 360) -- odchýlka IGA 1,20\,\% vs.\ 1,26\,\% v článku, po 12 skupinách sa líši
   najviac o 0,6 p.\,b.\ a pri $m=5$ až $30$ rastie rovnako.
-\item \textbf{Absolútne rpd pre $n\ge 10$} sú u nás nižšie (IGA 0,55\,\% vs.\ 1,05\,\%;
+\item \textbf{Absolútne rpd pre $n\ge 10$} sú u nás nižšie (IGA 0,64\,\% vs.\ 1,05\,\%;
   pri $n=10$ až 0,07 vs.\ 2,09\,\%), preto je aj Spearmanova korelácia so skupinami článku
-  pre IGA nízka (0,03), zatiaľ čo pre IGA0 je vysoká (0,82). Dôvodom sú BKV: v článku pre
+  pre IGA nízka ($-0{,}03$), zatiaľ čo pre IGA0 je vysoká (0,76). Dôvodom sú BKV: v článku pre
   $n=10$--50 pochádzajú z MIP štartovaného z IGA a z IGA$^+$, ktoré našli lepšie riešenia mimo
-  okolia 2.~fázy; u nás sú BKV pre $n\ge 10$ najlepšie riešenia samotného IGA, takže IGA má
-  odchýlku blízku nule. Pri $n=50$ a 100, kde MIP v článku už nepomáha, sa absolútne hodnoty
-  zhodujú dobre (0,64 vs.\ 0,43; 0,65 vs.\ 0,78).
+  okolia 2.~fázy; u nás sú BKV pre $n\ge 10$ najlepšie riešenia samotného IGA, takže pri
+  $n=10$ a 20, kde IGA nájde to isté riešenie takmer v každom behu, má odchýlku blízku nule.
+  Pre $n\ge 30$ naopak absolútne rpd závisí od počtu behov, z ktorých BKV berieme: pri $n=50$
+  dáva IGA so seedmi 1--3 (BKV zo 6 behov na inštanciu) rpd 0,64\,\%, s 10 seedmi (20 behov)
+  0,94\,\% oproti 0,43\,\% v článku; pri $n=100$ s 3 seedmi 0,65 vs.\ 0,78\,\%. Absolútne
+  hodnoty preto s článkom porovnávať nemožno.
 \item \textbf{Časy} (Tab.~\ref{tab:time}): na našom notebooku sú 2--3-krát dlhšie než v článku
   pre obe implementácie rovnako, čo zodpovedá rozdielu hardvéru (i5-6300U, 4 paralelné behy
   na 2 jadrách vs.\ i7-13700). Pomer časov medzi skupinami (rast s $n$ aj $m$) je ako v Tab.~4.
@@ -329,8 +333,9 @@ platia: 2.~fáza je účinná a lepšia než NPS-set, 1.~fáza samotná je slab�
 na malých inštanciách IGA nedosahuje optimum o 1--2\,\% a rozdiel rastie s $m$ a $r$.
 
 \paragraph{Zdroje rozdielov.}
-(1) \emph{BKV} -- hlavný zdroj rozdielu absolútnych hodnôt (pozri vyššie); rozdiely rpd medzi
-variantmi naň citlivé nie sú. (2) \emph{Inštancie} -- naše sú vygenerované rovnakým postupom,
+(1) \emph{BKV} -- hlavný zdroj rozdielu absolútnych hodnôt: závisia od toho, aké metódy
+a koľko behov do nich prispeli (pozri vyššie). Rozdiely rpd medzi variantmi na to citlivé nie sú,
+lebo všetky varianty pochádzajú z toho istého behu a delia sa tou istou BKV. (2) \emph{Inštancie} -- naše sú vygenerované rovnakým postupom,
 ale nie sú to tie isté čísla; ovplyvní to jednotlivé skupiny (napr.\ rpd IGA0 pri $n=5$
 3,48 vs.\ 3,23\,\%), nie trendy. (3) \emph{Detaily, ktoré článok neuvádza} -- bez kódu autorov
 by sme pravidlá pri zhode, poradie kandidátov a prijímanie celého kroku 2.~fázy museli
@@ -339,7 +344,7 @@ odhadnúť; pri malých inštanciách s veľa zhodami by to výsledky posunulo. 
 (5) \emph{Hardvér a jazyk} -- ovplyvňujú len čas; rozpočet je daný počtom iterácií, takže
 kvalita od rýchlosti nezávisí.
 
-\paragraph{Pozorovanie navyše.} IGA+NPS-set je v 6,5\,\% behov lepší než IGA. 2.~fáza sa
+\paragraph{Pozorovanie navyše.} IGA+NPS-set je v 6,9\,\% behov lepší než IGA. 2.~fáza sa
 zastaví v prvom lokálnom minime a NPS-set dokáže presunúť operáciu aj o viac pozícií naraz.
 Kombinácia (NPS-set ako štart 2.~fázy) by mohla priniesť malé zlepšenie -- článok ju neskúma.
 
@@ -351,7 +356,7 @@ Kombinácia (NPS-set ako štart 2.~fázy) by mohla priniesť malé zlepšenie --
 \item BKV nezahŕňajú MIP pre $n\ge 10$, IGA$^+$ ani 2SA, preto absolútne rpd pre $n\ge 10$ nie
   sú porovnateľné s článkom.
 \item Pre $n=100$ máme 3 seedy (výpočtový čas: jeden beh $n=100$, $m=30$ trvá na našom
-  počítači asi minútu); pre $n\le 50$ tiež 3.
+  počítači asi minútu); pre $n\le 50$ 10 (1--10).
 \item 2SA, IGA$^+$, MIP s CPLEX-om pre $n\ge 10$ a tabuľky 7--8 (zásobníky, JRI) sme
   nereplikovali. Pre MIP používame HiGHS a hornú hranicu z IGA namiesto warm startu; 4 inštancie
   zostali bez dôkazu optimality.
