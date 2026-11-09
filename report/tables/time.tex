@@ -1,0 +1,20 @@
+\begin{table}[ht]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\caption{Priemerný čas behu IGA v sekundách (obe fázy). Naše behy: 4 paralelné procesy na jednom počítači; článok: Core i7-13700.}
+\label{tab:time}
+\begin{tabular}{l|rrrrrr|rrrrrr|rrrrrr}
+\toprule
+ & \multicolumn{6}{c}{naša (Python)} & \multicolumn{6}{c}{autori (C++)} & \multicolumn{6}{c}{článok} \\
+$m$ & 5 & 10 & 20 & 30 & 50 & 100 & 5 & 10 & 20 & 30 & 50 & 100 & 5 & 10 & 20 & 30 & 50 & 100 \\
+\midrule
+5 & 0.24 & 0.22 & 0.36 & 0.64 & 1.67 & 7.39 & 0.04 & 0.13 & 0.35 & 0.66 & 1.69 & 6.88 & 0.00 & 0.00 & 0.10 & 0.20 & 0.60 & 3.40 \\
+10 & 0.25 & 0.26 & 0.51 & 0.93 & 2.47 & 12.41 & 0.06 & 0.20 & 0.47 & 0.94 & 2.48 & 12.02 & 0.00 & 0.10 & 0.20 & 0.30 & 1.10 & 7.00 \\
+20 & 0.28 & 0.37 & 0.93 & 1.72 & 4.76 & 28.88 & 0.08 & 0.30 & 0.87 & 1.70 & 4.87 & 25.30 & 0.00 & 0.10 & 0.30 & 0.60 & 2.30 & 15.40 \\
+30 & 0.29 & 0.48 & 1.26 & 2.63 & 7.66 & 54.77 & 0.11 & 0.40 & 1.21 & 2.58 & 7.84 & 53.84 & 0.00 & 0.10 & 0.40 & 1.00 & 3.70 & 26.90 \\
+\midrule
+priemer & 0.26 & 0.33 & 0.76 & 1.48 & 4.14 & 25.86 & 0.07 & 0.26 & 0.73 & 1.47 & 4.22 & 24.51 & 0.00 & 0.08 & 0.25 & 0.53 & 1.93 & 13.18 \\
+\bottomrule
+\end{tabular}
+\end{table}

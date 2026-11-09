@@ -226,7 +226,7 @@ def fig_time(df: pd.DataFrame, path: Path) -> None:
     n = df.groupby("instance")["n"].first().reindex(t.index)
     fig, ax = plt.subplots(figsize=(4.2, 3.8))
     sc = ax.scatter(t["authors"], t["ours"], c=np.log10(n), s=6, cmap="viridis", alpha=.7)
-    lim = [min(t.min().min(), 1e-3), t.max().max() * 1.5]
+    lim = [t.min().min() / 1.5, t.max().max() * 1.5]
     ax.plot(lim, lim, "k-", lw=.8)
     ax.set_xscale("log")
     ax.set_yscale("log")
@@ -263,7 +263,7 @@ def fig_convergence(hist: pd.DataFrame, df: pd.DataFrame, path: Path) -> None:
         ax.plot(100 * grid, np.mean(curves, axis=0), label=f"n = {n}")
     ax.set_xlabel("podiel rozpočtu iterácií 1. fázy [%]")
     ax.set_ylabel("najlepšie ΣC: rel. odchýlka od BKV [%]")
-    ax.set_yscale("symlog", linthresh=1)
+    ax.set_ylim(bottom=0)
     ax.grid(alpha=.3)
     ax.legend(fontsize=7)
     fig.tight_layout()
@@ -314,7 +314,7 @@ def main() -> None:
     df = add_rpd(load(Path(args.ours), Path(args.authors)), mip)
     df.groupby("instance")["bkv"].first().to_csv(outdir / "bkv.csv")
     n_inst = df.instance.nunique()
-    seeds = df.groupby("n")["seed"].unique().map(sorted)
+    seeds = df.groupby("n")["seed"].unique().map(lambda s: sorted(int(x) for x in s))
     say(f"Inštancií: {n_inst}, behov: {len(df) // 2} na implementáciu")
     for n, s in seeds.items():
         say(f"  n = {n}: seedy {s}")

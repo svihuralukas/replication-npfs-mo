@@ -1,0 +1,21 @@
+\begin{table}[ht]
+\centering
+\small
+\caption{Priemerná relatívna odchýlka od BKV v \% podľa počtu jobov $n$ (priemer cez $r$, $m$, inštancie a seedy). N = naša implementácia, A = program autorov (obe na našich inštanciách), Č = článok (originálne inštancie, seed 1, iné BKV).}
+\label{tab:rpd_by_n}
+\begin{tabular}{r|rrr|rrr|rrr}
+\toprule
+ & \multicolumn{3}{c}{IGA0} & \multicolumn{3}{c}{IGA+NPS-set} & \multicolumn{3}{c}{IGA} \\
+$n$ & N & A & Č & N & A & Č & N & A & Č \\
+\midrule
+5 & 3.48 & 3.48 & 3.23 & 2.79 & 2.79 & 2.67 & 1.20 & 1.20 & 1.26 \\
+10 & 1.89 & 1.89 & 4.02 & 1.29 & 1.29 & 3.38 & 0.07 & 0.07 & 2.09 \\
+20 & 1.43 & 1.43 & 2.42 & 0.93 & 0.94 & 1.90 & 0.21 & 0.19 & 1.06 \\
+30 & 1.63 & 1.61 & 1.72 & 1.19 & 1.16 & 1.32 & 0.55 & 0.52 & 0.67 \\
+50 & 1.52 & 1.52 & 1.31 & 1.13 & 1.13 & 0.91 & 0.64 & 0.65 & 0.43 \\
+100 & 1.38 & 1.39 & 1.49 & 1.06 & 1.06 & 1.16 & 0.65 & 0.66 & 0.78 \\
+\midrule
+priemer & 1.89 & 1.88 & 2.36 & 1.40 & 1.40 & 1.89 & 0.55 & 0.55 & 1.05 \\
+\bottomrule
+\end{tabular}
+\end{table}
