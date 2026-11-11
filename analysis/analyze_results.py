@@ -20,6 +20,9 @@ Metodika (ako v článku, Sekcia 5.1):
   * Pre každú inštanciu sa používajú len seedy, ktoré prebehli v OBOCH implementáciách.
   * Seedy medzi implementáciami nie sú párové (iné generátory náhodných čísel) – párujeme
     inštancie (priemer cez seedy), Wilcoxonov test so znamienkovými poradiami.
+  * Behy z Google Colabu (results/colab/*_colab_*.csv, colab/README.md) sa pridajú ku kvalite
+    riešení; časy (Tab. 4, graf časov) sa počítajú len z behov na našom notebooku, aby sa
+    nemiešal hardvér.
 
 Spustenie (z koreňa repozitára):
     python analysis/analyze_results.py
@@ -55,11 +58,16 @@ def say(s: str = "") -> None:
 
 # --------------------------------------------------------------------------- načítanie
 
-def load(ours_path: Path, authors_path: Path) -> pd.DataFrame:
-    ours = pd.read_csv(ours_path).assign(impl="ours")
-    auth = pd.read_csv(authors_path).assign(impl="authors")
+def load(ours_paths: list[Path], authors_paths: list[Path]) -> pd.DataFrame:
+    """Prvý súbor v zozname je hlavný (náš notebook, source = local), ďalšie sú z Colabu."""
+    def read(paths, impl):
+        return pd.concat([pd.read_csv(p).assign(impl=impl, source="local" if k == 0 else "colab")
+                          for k, p in enumerate(paths)], ignore_index=True)
+    ours = read(ours_paths, "ours")
+    auth = read(authors_paths, "authors")
     cols = [c for c in auth.columns if c in ours.columns]
     df = pd.concat([ours[cols + ["time_phase1", "time_phase2"]], auth[cols]], ignore_index=True)
+    df = df.drop_duplicates(["instance", "seed", "impl"], keep="first")
     # len seedy, ktoré prebehli v oboch implementáciách
     seeds = df.groupby(["instance", "seed"])["impl"].nunique()
     common = seeds[seeds == 2].index
@@ -222,6 +230,7 @@ def fig_rpd_by_n(df: pd.DataFrame, path: Path) -> None:
 
 
 def fig_time(df: pd.DataFrame, path: Path) -> None:
+    df = df[df.source == "local"]
     t = df.groupby(["instance", "impl"])["time"].mean().unstack("impl")
     n = df.groupby("instance")["n"].first().reindex(t.index)
     fig, ax = plt.subplots(figsize=(4.2, 3.8))
@@ -302,6 +311,8 @@ def main() -> None:
     ap.add_argument("--history", default=str(ROOT / "results" / "iga_ours_history.csv"))
     ap.add_argument("--authors", default=str(ROOT / "reference" / "iga_authors.csv"))
     ap.add_argument("--mip", default=str(ROOT / "results" / "mip.csv"))
+    ap.add_argument("--colab", default=str(ROOT / "results" / "colab"),
+                    help="priečinok s výsledkami z Colabu (iga_ours_colab_*.csv, iga_authors_colab_*.csv)")
     ap.add_argument("--outdir", default=str(ROOT / "results" / "analysis"))
     args = ap.parse_args()
 
@@ -311,7 +322,14 @@ def main() -> None:
         d.mkdir(parents=True, exist_ok=True)
 
     mip = pd.read_csv(args.mip) if Path(args.mip).exists() else None
-    df = add_rpd(load(Path(args.ours), Path(args.authors)), mip)
+    colab = Path(args.colab)
+    c_ours = sorted(p for p in colab.glob("iga_ours_colab_*.csv") if "history" not in p.name)
+    c_auth = sorted(colab.glob("iga_authors_colab_*.csv"))
+    c_hist = sorted(colab.glob("iga_ours_colab_*_history.csv"))
+    df = add_rpd(load([Path(args.ours)] + c_ours, [Path(args.authors)] + c_auth), mip)
+    if c_ours or c_auth:
+        say(f"Behy z Colabu: {len(c_ours)} + {len(c_auth)} súborov, "
+            f"{(df.source == 'colab').sum() // 2} spoločných behov")
     df.groupby("instance")["bkv"].first().to_csv(outdir / "bkv.csv")
     n_inst = df.instance.nunique()
     seeds = df.groupby("n")["seed"].unique().map(lambda s: sorted(int(x) for x in s))
@@ -397,8 +415,9 @@ def main() -> None:
     say()
 
     # ---------------- časy (Tab. 4)
-    t_time_o = group_table(df[df.impl == "ours"], "time", index=("m",))
-    t_time_a = group_table(df[df.impl == "authors"], "time", index=("m",))
+    loc = df[df.source == "local"]                      # časy len z jedného počítača
+    t_time_o = group_table(loc[loc.impl == "ours"], "time", index=("m",))
+    t_time_a = group_table(loc[loc.impl == "authors"], "time", index=("m",))
     paper_t = pd.read_csv(ROOT / "data" / "paper_results" / "table4_time.csv")
     paper_t = paper_t[paper_t.method == "IGA"].drop(columns="method").set_index("m")
     with_avg(t_time_o).round(3).to_csv(outdir / "time_ours.csv")
@@ -411,7 +430,7 @@ def main() -> None:
     for n in NS:
         say(f"  n = {n:3d}: {t_time_o[f'n{n}'].mean():6.2f} | {t_time_a[f'n{n}'].mean():6.2f} | "
             f"{paper_t[f'n{n}'].mean():6.2f}")
-    ours = df[df.impl == "ours"]
+    ours = loc[loc.impl == "ours"]
     share2 = (ours.time_phase2 / ours.time).groupby(ours.n).mean()
     say("  podiel 2. fázy na našom čase: " + ", ".join(f"n={n}: {share2[n]:.0%}" for n in share2.index))
     say()
@@ -439,6 +458,7 @@ def main() -> None:
     for v, vname in VARIANTS.items():
         wilcoxon_line(per_inst[(f"{v}_ft", "ours")], per_inst[(f"{v}_ft", "authors")], vname)
     say("Wilcoxonov test, prínos 2. fázy a NPS-set v našej implementácii (pár = beh):")
+    ours = df[df.impl == "ours"]
     wilcoxon_line(ours.iga_ft, ours.iga0_ft, "IGA vs IGA0")
     wilcoxon_line(ours.nps_ft, ours.iga0_ft, "IGA+NPS-set vs IGA0")
     wilcoxon_line(ours.iga_ft, ours.nps_ft, "IGA vs IGA+NPS-set")
@@ -449,7 +469,8 @@ def main() -> None:
     fig_time(df, figdir / "time_scatter.pdf")
     fig_seed_box(df, figdir / "seed_box.pdf")
     if Path(args.history).exists():
-        fig_convergence(pd.read_csv(args.history), df, figdir / "convergence.pdf")
+        hist = pd.concat([pd.read_csv(p) for p in [Path(args.history)] + c_hist], ignore_index=True)
+        fig_convergence(hist.drop_duplicates(["instance", "seed", "iteration"]), df, figdir / "convergence.pdf")
 
     (outdir / "summary.txt").write_text("\n".join(out_lines) + "\n", encoding="utf-8")
     print("Uložené do", outdir, figdir, texdir)

@@ -74,6 +74,7 @@ python src/run_experiments.py --seeds 4 5 6 7 8 9 10 --max-n 50 --out results/ig
 python3 reference/run_authors.py --instances "instances/generated/*.txt" --seeds 1 2 3 --out reference/iga_authors.csv
 python3 reference/run_authors.py --instances "instances/generated/*.txt" --seeds 4 5 6 7 8 9 10 --max-n 50 \
     --out reference/iga_authors.csv
+# seedy 4–10 pre n = 100 v Google Colabe: colab/README.md (výsledky do results/colab/)
 python src/run_mip.py --instances "instances/generated/*_05_[0-9][0-9]_[0-9][0-9].txt" --out results/mip.csv  # optimá n = 5
 
 python analysis/verify_exact.py            # presná zhoda deterministických častí s programom autorov
