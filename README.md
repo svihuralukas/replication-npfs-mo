@@ -62,16 +62,26 @@ cmake --build build -j4
 Všetko z koreňa repozitára:
 
 ```bash
-python -m pytest tests/                    # testy (82), vrátane zhody s kódom autorov
+python -m pytest tests/                    # testy (142), vrátane zhody s kódom autorov
 python src/generate_instances.py           # vygeneruje 2160 inštancií do instances/generated/
 python src/compare_instances.py            # porovnanie s originálnymi inštanciami (vyžaduje ../npfs-mo)
 
-# 1. fáza (IGA0) – naša implementácia
-python src/run_experiments.py --instances "instances/generated/*_[0-5][0-9]_[0-9][0-9]_0[01].txt" \
-    --seeds 1 2 3 4 5 --out results/iga0_check_ours.csv
-# to isté s programom autorov (Linux/WSL)
-python3 reference/run_authors.py --instances "instances/generated/*_[0-5][0-9]_[0-9][0-9]_0[01].txt" \
-    --seeds 1 2 3 4 5 --out reference/iga0_check_authors.csv
+# 2. etapa – plné experimenty: IGA0, IGA+NPS-set a IGA naraz (parametre z config/experiment.yaml);
+# priebežný zápis, prerušený beh sa po opätovnom spustení dokončí
+python src/run_experiments.py --seeds 1 2 3 --out results/iga_ours.csv
+python src/run_experiments.py --seeds 4 5 6 7 8 9 10 --max-n 50 --out results/iga_ours.csv
+# to isté s programom autorov (Linux/WSL alebo Docker – reference/README.md)
+python3 reference/run_authors.py --instances "instances/generated/*.txt" --seeds 1 2 3 --out reference/iga_authors.csv
+python3 reference/run_authors.py --instances "instances/generated/*.txt" --seeds 4 5 6 7 8 9 10 --max-n 50 \
+    --out reference/iga_authors.csv
+# seedy 4–10 pre n = 100 v Google Colabe: colab/README.md (výsledky do results/colab/)
+python src/run_mip.py --instances "instances/generated/*_05_[0-9][0-9]_[0-9][0-9].txt" --out results/mip.csv  # optimá n = 5
+
+python analysis/verify_exact.py            # presná zhoda deterministických častí s programom autorov
+python analysis/analyze_results.py         # tabuľky, štatistiky, grafy → results/analysis, report/
+# PDF reportu: cd report && latexmk -pdf main.tex  (babel slovak – v Linuxe balík texlive-lang-czechslovak)
+
+# 1. etapa (IGA0, results/iga0_check_*.csv) vznikla staršou verziou runnera (commit 56c39a8)
 python analysis/compare_iga0.py            # porovnanie + Wilcoxonov test
 ```
 
@@ -82,9 +92,12 @@ python analysis/compare_iga0.py            # porovnanie + Wilcoxonov test
 | Generátor a načítanie inštancií | `src/instance.py`, `src/generate_instances.py` | hotové, overené voči dátam autorov |
 | Výpočet C, C<sub>max</sub>, ΣC<sub>j</sub> | `src/evaluate.py` | hotové, zhoda s kódom autorov (Obr. 1, Obr. 3, 14 inštancií) |
 | IGA fáza 1 (IGA0) | `src/iga.py` | hotové, konštrukcia a local search presne ako autori (144 inšt.), IGA0 štatisticky bez rozdielu (Wilcoxon p = 0,81) |
-| IGA fáza 2 (non-permutation) + NPS-set | – | rozpracované |
-| Konfigurácia experimentov, plné experimenty | `config/experiment.yaml` | čaká |
-| Analýza, report | `analysis/`, `report/` | čaká |
+| IGA fáza 2 (non-permutation) | `src/nonperm.py` | hotové, z permutácie autorov presne ten istý rozvrh (86 inštancií zo všetkých 72 skupín) |
+| NPS-set | `src/nps_set.py` | hotové, presná zhoda s kódom autorov (86 inštancií + konštrukcia na všetkých) |
+| MIP (optimá pre n = 5) | `src/mip.py` | hotové, HiGHS namiesto CPLEX-u; Obr. 3 → 1191 |
+| Konfigurácia experimentov, plné experimenty | `config/experiment.yaml`, `results/`, `reference/iga_authors.csv` | hotové: seedy 1–10 pre n ≤ 50, 1–3 pre n = 100 |
+| Analýza | `analysis/analyze_results.py`, `results/analysis/` | hotové |
+| Report | `report/main.tex` | návrh, treba skontrolovať tímom |
 
 ## Štruktúra
 
@@ -97,6 +110,6 @@ instances/          inštancie: generated/ (naše), original/ (H&N, ak ich dosta
 reference/          spúšťanie programu autorov a jeho výsledky na našich inštanciách
 report/             záverečný report (LaTeX)
 results/            výsledky našich experimentov (CSV, sú v gite)
-src/                naša implementácia (instance, evaluate, iga, run_experiments)
+src/                naša implementácia (instance, evaluate, iga, nonperm, nps_set, mip, run_experiments)
 tests/              testy (príklady z článku, zhoda s kódom autorov, hrubá sila)
 ```

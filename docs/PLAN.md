@@ -13,13 +13,14 @@ interpretácii výsledkov.
 | 2 | Inštancie: generátor, formát, loader | `src/instance.py`, `src/generate_instances.py` | ✅ |
 | 3 | Výpočet ΣC<sub>j</sub> s chýbajúcimi operáciami + testy z Obr. 1 a 3 | `src/evaluate.py` | ✅ |
 | 4 | IGA fáza 1 (permutačný priestor) | `src/iga.py` | ✅ |
-| 5 | IGA fáza 2 (anticipácia/oneskorenie) | `src/nonperm.py` | rozpracované |
-| 6 | Ablácia IGA+NPS-set | `src/nps_set.py` | |
-| 7 | Runner, config, logovanie (čas, konvergencia, seed) | `src/run_experiments.py` | čiastočne (IGA0) |
-| 8 | Referenčný beh C++ kódu autorov na našich inštanciách | `reference/run_authors.py` | ✅ skompilované a overené |
-| 9 | Experimenty | `results/` | |
-| 10 | Štatistiky, tabuľky, grafy, porovnanie s článkom | `analysis/` | |
-| 11 | Report (6–10 strán) | `report/main.tex` | |
+| 5 | IGA fáza 2 (anticipácia/oneskorenie) | `src/nonperm.py` | ✅ presná zhoda s kódom autorov (86 inštancií) |
+| 6 | Ablácia IGA+NPS-set | `src/nps_set.py` | ✅ presná zhoda s kódom autorov |
+| 7 | Runner, config, logovanie (čas, konvergencia, seed) | `src/run_experiments.py` | ✅ všetky varianty, resume |
+| 8 | Referenčný beh C++ kódu autorov na našich inštanciách | `reference/run_authors.py` | ✅ (aj cez Docker, `reference/README.md`) |
+| 8b | Presné optimá pre n = 5 (MIP, HiGHS) | `src/mip.py`, `src/run_mip.py` | ✅ |
+| 9 | Experimenty | `results/`, `reference/iga_authors.csv` | ✅ |
+| 10 | Štatistiky, tabuľky, grafy, porovnanie s článkom | `analysis/analyze_results.py` | ✅ |
+| 11 | Report (6–10 strán) | `report/main.tex` | návrh – skontrolovať tímom |
 | 12 | Príprava na obhajobu | | |
 
 ## Metodológia experimentov
@@ -39,8 +40,14 @@ porovnávame priemery po skupinách.
 **Parametre** (podľa článku, sekcia 5.1): `d = min{8, ⌈0.8n⌉}`, `α = 0.234375`,
 teplota `T = α · p̄ / 10`, rozpočet `15000/n` iterácií fázy 1. Sú v `config/experiment.yaml` a `src/iga.py` (`IGAParams`).
 
-**Opakovania.** Autori použili jediný seed (1). My spustíme každý experiment s 10 seedmi
-(1–10) a uvedieme priemer, medián, smerodajnú odchýlku, minimum a maximum.
+**Opakovania.** Autori použili jediný seed (1). My: seedy 1–3 na všetkých inštanciách,
+pre n ≤ 50 navyše seedy 4–10 (spolu 10). Pre n = 100 ostávame pri 3 seedoch – jeden beh
+n = 100, m = 30 trvá na našom notebooku (i5-6300U, 4 paralelné behy) asi minútu v našej
+implementácii aj v programe autorov. Uvádzame priemer, medián, smerodajnú odchýlku, minimum
+a maximum. Výsledky po (inštancia, seed): `results/iga_ours.csv`, `reference/iga_authors.csv`.
+
+**BKV.** Najlepšia hodnota zo všetkých našich behov (obe implementácie, všetky seedy a varianty)
+a z MIP pre n = 5 (`results/mip.csv`, HiGHS, 356 z 360 inštancií optimálne).
 
 **Metrika.** Relatívna odchýlka `(v − b)/b` v percentách od BKV, ako v článku.
 Ďalej sledujeme čas behu, konvergenciu (ΣC<sub>j</sub> po iteráciách) a stabilitu medzi seedmi.
@@ -68,6 +75,19 @@ teplota `T = α · p̄ / 10`, rozpočet `15000/n` iterácií fázy 1. Sú v `con
   najzadnejšia pozícia (autori skúmajú pozície od konca),
 - shift local search berie joby podľa **pozícií** 1..n, nie podľa indexov jobov,
 - vykoná sa limit + 1 iterácií (cyklus končí, až keď počet krokov prekročí limit).
+
+2. fáza (`ENPSolution::insert_all_ft`, `shift_step`):
+
+- krok berie joby podľa **indexu** jobu 0..n-1 (nie podľa pozície),
+- vybratý job sa vloží vždy na najlepšie z kandidátnych miest, aj keď je výsledok horší ako pred
+  vybratím; až na konci kroku sa porovná ΣC – ak nie je ostro lepšie, celý krok sa zahodí,
+- kandidáti sa vyhodnocujú v pevnom poradí a pri zhode (ΣC, potom Cmax) vyhráva prvý:
+  pre k = n..1 straight(k) a anticipácie na strojoch m..2; potom pre k = n..2 oneskorenia
+  na strojoch 2..m (presné definície v hlavičke `src/nonperm.py`),
+- štart z najlepšej permutácie 1. fázy, stop v prvom lokálnom minime.
+
+NPS-set (`PSolution::evaluateNPSset`, `holes.cpp`): medzera s najmenším začiatkom, do ktorej sa
+operácia zmestí po čase pripravenosti jobu, t. j. najskorší prípustný začiatok operácie.
 
 ## Vyriešené otázky
 

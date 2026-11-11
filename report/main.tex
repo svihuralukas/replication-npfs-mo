@@ -12,53 +12,381 @@
 \author{Lukáš \and Dominik \and Jano}
 \date{\today}
 
+\newcommand{\Csum}{\sum C_j}
+\setlength{\emergencystretch}{2em}  % riadky s dlhými názvami súborov nepretečú za okraj
+
 \begin{document}
 \maketitle
 
 % Rozsah: 6–10 strán A4 bez príloh. Každá tabuľka a graf musí mať popis a byť interpretovaná v texte.
+% Čísla v sekciách 7–9 pochádzajú z results/analysis/summary.txt (analysis/analyze_results.py).
 
 \begin{abstract}
-% TODO
+Replikujeme dvojfázový iterovaný greedy algoritmus (IGA) Ritta a Rossita (2024) pre flow shop
+s chýbajúcimi operáciami a kritériom $\Csum$. Algoritmus aj jeho ablácie (IGA0, IGA+NPS-set)
+sme nezávisle implementovali v Pythone a spustili na 2160 inštanciách vygenerovaných podľa
+Henneberga a Neufelda; na rovnakých dátach sme spustili aj pôvodný C++ program autorov
+a pre $n=5$ sme MIP modelom z článku vypočítali optimá. Deterministické časti našej
+implementácie sa s programom autorov zhodujú presne (vrátane celých nepermutačných rozvrhov),
+výsledky náhodných častí sa štatisticky nelíšia (Wilcoxon, $p\ge 0{,}089$) a rozdiel priemernej odchýlky je nanajvýš 0,02 percentuálneho bodu (95\,\% interval spoľahlivosti). Kľúčové tvrdenia článku
+sa potvrdili: 2. fáza zlepšuje permutačné riešenia v priemere o 1,33 percentuálneho bodu
+(článok 1,32), NPS-set o 0,49 (článok 0,48) a na inštanciách s $n=5$ je IGA od optima
+v priemere 1,20\,\% (článok 1,26\,\%). Absolútne odchýlky pre $n\ge 10$ sa s článkom porovnať nedajú,
+lebo naše najlepšie známe hodnoty pochádzajú z iných metód a iného počtu behov; čas behu je na našom hardvéri 2- až 4-násobný.
 \end{abstract}
 
+% =====================================================================================
 \section{Opis a význam riešeného problému}
-% TODO: flow shop, chýbajúce operácie, mass customization; \cite{RittRossit2024}.
 
+Flow shop je výrobná linka s $m$ strojmi, ktorou postupne prechádza $n$ úloh (jobov) vždy v tom
+istom poradí strojov. V prostredí hromadnej personalizácie (\emph{mass customization}) však
+mnohé výrobky niektoré kroky linky nepotrebujú -- hovoríme o \emph{chýbajúcich operáciách}
+(\emph{missing operations}). Typickým príkladom sú linky na dosky plošných spojov, nábytok,
+keramiku či farmaceutické výrobky \cite{RittRossit2024}.
+
+Najjednoduchší prístup je nahradiť chýbajúcu operáciu operáciou s nulovým časom. Ritt a Rossit
+\cite{RittRossit2024} však ukazujú, že to nie je to isté: job s nulovou operáciou musí na stroji
+dodržať poradie a čakať, kým sa stroj uvoľní, hoci tam nič nerobí. Už v permutačnom flow shope
+môže byť takto modelovaný rozvrh ľubovoľne horší (vety 2 a 3 článku). Chýbajúce operácie navyše
+vytvárajú na strojoch medzery, ktoré sa dajú vyplniť, ak dovolíme \emph{nepermutačné} rozvrhy
+s rôznym poradím jobov na rôznych strojoch. Cieľom je minimalizovať celkový čas dokončenia
+$\Csum$, ktorý zodpovedá priemernej priebežnej dobe výroby a viazanému kapitálu.
+
+Článok navrhuje dvojfázový iterovaný greedy algoritmus (IGA) a uvádza ho ako nový
+\emph{state of the art} pre problém $F \mid \mathit{skip} \mid \Csum$, lepší než dvojfázové
+simulované žíhanie (2SA) Henneberga a Neufelda \cite{HennebergNeufeld2016}. V tejto práci
+(variant A zadania) jeho výsledky replikujeme nezávislou implementáciou v Pythone.
+
+% =====================================================================================
 \section{Formulácia optimalizačnej úlohy}
-% TODO: F | skip | \sum C_j; typ problému (min., diskrétny, jednokriteriálny,
-% deterministický, statický, s obmedzeniami, white-box); rozhodovacie premenné;
-% priestor riešení a reprezentácia (permutácia / pseudo-joby \cite{BenavidesRitt2018});
-% obmedzenia; účelová funkcia; vyhodnocovanie kvality.
 
+\paragraph{Vstup.} Joby $J_1,\dots,J_n$, stroje $M_1,\dots,M_m$ a procesné časy $p_{ij}\ge 0$
+operácie $o_{ij}$ jobu $j$ na stroji $i$. Hodnota $p_{ij}=0$ v našich dátach označuje
+\emph{chýbajúcu} operáciu (nie nulovú). Množinu existujúcich operácií označme
+$\mathcal{O}=\{o_{ij} : p_{ij}>0\}$.
+
+\paragraph{Rozhodovacie premenné a priestor riešení.} Riešenie je $m$-tica permutácií
+$\pi=(\pi_1,\dots,\pi_m)$, kde $\pi_i$ je poradie jobov na stroji $i$. Priestor má $(n!)^m$
+prvkov; \emph{permutačné} rozvrhy ($\pi_1=\dots=\pi_m$) tvoria podpriestor veľkosti $n!$. Keďže
+job prechádza stroje vždy vzostupne, každá $m$-tica permutácií je prípustná (graf závislostí
+je acyklický) a časy sa dajú vypočítať priamo -- ide o \emph{white-box} úlohu s explicitnou
+účelovou funkciou. Algoritmus používa reprezentáciu pomocou \emph{pseudo-jobov}
+\cite{BenavidesRitt2018}: pseudo-job $J_j[i,i']$ je súvislý blok operácií jobu $j$ na strojoch
+$i,\dots,i'$ a nepermutačný rozvrh je postupnosť pseudo-jobov (napr. optimum na Obr.~3 článku
+je $J_5, J_3[1,3], J_2, J_3[4,5], J_4, J_1$).
+
+\paragraph{Obmedzenia a účelová funkcia.} Časy dokončenia $C_{ij}$ existujúcich operácií spĺňajú
+\begin{align}
+  C_{ij} &\ge C_{i'j} + p_{ij} && i' = \text{predchádzajúci stroj s existujúcou operáciou jobu } j,\\
+  C_{ij} &\ge C_{i,k} + p_{ij} && k = \text{job pred } j \text{ v } \pi_i \text{ s existujúcou operáciou na } M_i,
+\end{align}
+(prvá operácia jobu a prvý job na stroji majú dolnú hranicu $p_{ij}$), pričom v optimálnom
+(semiaktívnom) rozvrhu platí rovnosť s maximom oboch výrazov. Chýbajúca operácia stroj
+neobsadí a job ju preskočí. Minimalizujeme
+\[
+  \Csum = \sum_{j=1}^{n} C_j, \qquad C_j = \max\{C_{ij} : o_{ij}\in\mathcal{O}\},
+\]
+pri zhode druhotne $C_{\max}=\max_j C_j$. Článok uvádza aj zmiešaný celočíselný model
+s binárnymi premennými poradia $x_{ijj'}$ a podmienkami s veľkou konštantou $M$ (rovnice
+(2)–(11)); ten používame na výpočet optím pre $n=5$ (Sekcia~\ref{sec:impl}).
+
+\paragraph{Typ problému.} Minimalizačný, kombinatorický (diskrétny), jednokriteriálny
+(s lexikografickým druhotným kritériom), deterministický a statický (všetky údaje známe vopred,
+všetky joby dostupné v čase 0), s obmedzeniami (technologické poradie strojov, kapacita strojov).
+Pre $m>1$ je NP-ťažký, preto sa na inštancie s až 100 jobmi a 30 strojmi používajú heuristiky.
+
+\paragraph{Vyhodnocovanie kvality.} Ako v článku: relatívna odchýlka
+$\mathrm{rpd} = 100\,(v-b)/b$ v percentách od najlepšej známej hodnoty (BKV) $b$ inštancie,
+priemerovaná cez inštancie skupiny; ďalej čas výpočtu.
+
+% =====================================================================================
 \section{Metóda autorov článku}
-% TODO: dvojfázový IGA \cite{RittRossit2024}, \cite{RuizStutzle2007},
-% vkladanie s anticipáciou/oneskorením \cite{BenavidesRitt2015}, porovnávaná 2SA \cite{HennebergNeufeld2016}.
 
-\section{Naša implementácia}
-% TODO
+IGA \cite{RittRossit2024} má dve fázy.
 
+\paragraph{1. fáza -- IGA v permutačnom priestore.} Iterovaný greedy algoritmus
+\cite{RuizStutzle2007}: štartovacie riešenie sa vylepší \emph{shift} lokálnym prehľadávaním
+(každý job sa vyberie a vloží na pozíciu s najmenším $\Csum$, pri zhode s najmenším $C_{\max}$;
+opakuje sa, kým sa zlepšuje). Potom sa opakuje perturbácia (odstránenie $d=\min\{8,\lceil
+0.8n\rceil\}$ náhodných jobov a ich greedy vloženie späť), lokálne prehľadávanie a Metropolisovo
+akceptačné kritérium \cite{Metropolis1953} s teplotou $T=\alpha\bar p/10$, $\alpha=0{,}234375$.
+Rozpočet je $15000/n$ iterácií (približne 0,5\,ms na operáciu v prostredí autorov). Výsledok
+samotnej 1.~fázy je ablácia \textbf{IGA0}.
+
+\paragraph{2. fáza -- lokálne prehľadávanie v nepermutačnom priestore.} Z najlepšej permutácie
+sa spustí rovnaké shift prehľadávanie, ale job sa môže vložiť troma spôsobmi
+\cite{BenavidesRitt2015}: \emph{straight} (rovnaká pozícia $k$ na všetkých strojoch),
+s \emph{anticipáciou} na stroji $i$ (pozícia $k$ na strojoch $1,\dots,i-1$ a $k-1$ na strojoch
+$i,\dots,m$) a s \emph{oneskorením} (pozícia $k$, resp. $k+1$). Prehľadávanie končí v prvom
+lokálnom minime. Opakovaným vkladaním vznikajú pseudo-joby; ich počet nepresiahne $2n$.
+Výsledok oboch fáz je \textbf{IGA}.
+
+\paragraph{Ablácia IGA+NPS-set.} 2. fáza sa nahradí konštrukčnou heuristikou NPS-set
+\cite{Pugazhendhi2003}: joby sa v poradí permutácie z 1.~fázy rozvrhujú operácia po operácii
+do najskoršej voľnej medzery na stroji, ktorá je dosť veľká a začína po dokončení predošlej
+operácie jobu. Nič sa tým nezdrží, takže výsledok nie je horší než permutácia.
+
+\paragraph{Experimenty autorov.} 2160 inštancií Henneberga a Neufelda \cite{HennebergNeufeld2016}
+($n\in\{5,10,20,30,50,100\}$, $m\in\{5,10,20,30\}$, $r\in\{0{,}2;0{,}3;0{,}4\}$, 30 inštancií
+v skupine), C++ na Core i7-13700, jediný seed. BKV zbierajú zo všetkých experimentov
+(IGA, IGA$^+$ s 5-násobným rozpočtom, 2SA, MIP s CPLEX-om). Výsledky sú v Tab.~3 (IGA vs.\ 2SA),
+Tab.~4 (časy), Tab.~5 (MIP) a Tab.~6 (ablácie).
+
+% =====================================================================================
+\section{Naša implementácia}\label{sec:impl}
+
+\begin{sloppypar}
+Implementácia je v Pythone, výpočtové jadrá sú kompilované cez Numba \cite{Lam2015}. Moduly:
+\texttt{evaluate.py} (výpočet $C_{ij}$, $C_{\max}$, $\Csum$ pre permutačné aj nepermutačné
+rozvrhy), \texttt{iga.py} (1.~fáza), \texttt{nonperm.py} (2.~fáza), \texttt{nps\_set.py}
+(NPS-set), \texttt{mip.py} (MIP model), \texttt{run\_experiments.py} (paralelný runner).
+Nepermutačný rozvrh ukladáme ako maticu $m\times n$ poradí na strojoch.
+\end{sloppypar}
+
+\paragraph{Detaily doplnené z kódu autorov.} Článok niektoré detaily neuvádza; prevzali sme ich
+z verejného kódu autorov \cite{RittRossit2024code} (kód sme nekopírovali, ale prepísali podľa
+opisu) a overili presnou zhodou: štartovacie riešenie (joby podľa súčtu časov zostupne
+a postupné vkladanie), pravidlo pri zhode (vyhráva najzadnejšia pozícia), local search 1.~fázy
+po pozíciách, $\mathit{limit}+1$ iterácií. V 2.~fáze: joby sa berú podľa indexu, vybratý job sa
+vloží vždy (aj keď je výsledok horší) a o prijatí rozhoduje až celý krok, kandidáti sa
+vyhodnocujú v pevnom poradí (straight$(k)$, anticipácie od posledného stroja, pre $k=n,\dots,1$;
+potom oneskorenia) a pri zhode vyhráva prvý.
+
+\paragraph{Zrýchlenie 2.~fázy.} Autori každého kandidáta prepočítajú celý rozvrh
+($O(nm)$), čo dáva $O(n^3m^2)$ na krok. Výsledok nemeníme, ale (i) stav po strojoch $1,\dots,i-1$
+zdieľa kandidát s anticipáciou/oneskorením so straight vložením, takže ho počítame raz,
+(ii) kandidáta prestaneme počítať, keď dolná hranica $\Csum$ (doterajšie časy dokončenia plus
+zvyšné procesné časy) ostro prekročí doteraz najlepšiu hodnotu.
+
+\paragraph{MIP.} Model zo Sekcie 3.3 článku s účelovou funkciou $\Csum$ riešime voľným solverom
+HiGHS \cite{HuangfuHall2018} cez \texttt{scipy.optimize.milp} s časovým limitom ako v článku
+($nm$ sekúnd, aspoň 30\,s). Používame ho len pre $n=5$, kde dáva dokázané optimá.
+
+\paragraph{Overenie správnosti.} Okrem testov na príkladoch z článku (Obr.~1: $\Csum$ 31 vs.\ 32;
+Obr.~3: optimum 1191, ktoré nájde 2.~fáza aj MIP) a porovnaní s hrubou silou sme deterministické
+časti porovnali s pôvodným programom autorov spusteným na našich inštanciách: konštrukcia,
+prvý local search a NPS-set z konštrukcie sa zhodujú na všetkých inštanciách; 2.~fáza a NPS-set
+spustené z permutácie, ktorú našiel program autorov, dávajú na 86 inštanciách zo všetkých
+72 skupín presne ten istý rozvrh (\texttt{results/exact\_check.csv}). Testov je 142.
+
+% =====================================================================================
 \section{Rozdiely oproti pôvodnému článku}
-% TODO: jazyk (Python + numba vs. C++), hardvér, inštancie, počet seedov, prípadné zmenšenie rozsahu.
 
+\begin{itemize}
+\item \textbf{Inštancie.} Originálne inštancie H\&N nie sú verejne dostupné (v repozitári autorov
+  sú len výsledky), preto sme vygenerovali vlastné podľa rovnakého postupu (2160 inštancií,
+  U[1,99], presne $\mathrm{round}(r\,n\,m)$ chýbajúcich operácií). Hodnoty z článku
+  preto nemôžeme porovnávať inštanciu po inštancii, len po skupinách.
+\item \textbf{Referencia na rovnakých dátach.} Na našich inštanciách spúšťame aj pôvodný C++ program
+  autorov (v Dockeri); jeho výsledok považujeme za to, čo by dal článok na našich dátach.
+\item \textbf{BKV.} Článok berie BKV aj z 2SA, IGA$^+$ a MIP s CPLEX-om. My ich berieme zo všetkých
+  našich behov (obe implementácie, všetky seedy a varianty) a z MIP pre $n=5$. Pre $n\ge 10$ sú
+  naše BKV preto slabšie a odchýlky systematicky menšie.
+\item \textbf{Seedy.} Autori použili jeden seed; my spúšťame každý experiment so seedmi 1--10 pre $n\le 50$ a 1--3 pre $n=100$.
+\item \textbf{Jazyk a hardvér.} Python + Numba namiesto C++, iný procesor (Intel Core i5-6300U, notebook), 4 paralelné
+  procesy. Časy nie sú priamo porovnateľné.
+\item \textbf{Generátor náhodných čísel} je iný (NumPy PCG64 vs.\ \texttt{std::mt19937}), preto
+  rovnaký seed nedáva rovnaký priebeh -- implementácie porovnávame štatisticky.
+\item \textbf{Nereplikujeme} 2SA (Tab.~3, 4 vľavo), IGA$^+$ (Tab.~5) a tabuľky 7--8 o veľkosti
+  zásobníkov.
+\end{itemize}
+
+% =====================================================================================
 \section{Experimentálna metodológia}
-% TODO: inštancie, parametre, rozpočet 15000/n iterácií, seedy 1–10, metriky.
 
+\paragraph{Inštancie.} Všetkých 2160 vygenerovaných inštancií (72 skupín po 30), seed generátora
+2026, popis v \texttt{instances/README.md}.
+
+\paragraph{Parametre.} Ako v článku: $d=\min\{8,\lceil 0.8n\rceil\}$, $\alpha=0{,}234375$,
+$15000/n$ iterácií 1.~fázy; sú v súbore \texttt{config/\allowbreak experiment.yaml}. Jeden beh dá naraz IGA0,
+IGA+NPS-set aj IGA (rovnako ako program autorov), takže varianty sa porovnávajú na tej istej
+permutácii z 1.~fázy.
+
+\paragraph{Opakovania.} Každý experiment sme spustili so seedmi 1--10 pre $n\le 50$ a 1--3 pre $n=100$
+(autori: jeden seed 1). Pre každú inštanciu porovnávame len seedy, ktoré prebehli v oboch
+implementáciách. Behy prebiehali na notebooku s procesorom Intel Core i5-6300U (2 jadrá,
+4 vlákna, 2,4\,GHz), 4 paralelné procesy; program autorov v Dockeri (Ubuntu 24.04, gcc,
+\texttt{-O3}) na tom istom počítači. MIP pre $n=5$ bežal mimo hlavných behov.
+
+\paragraph{Metriky.} rpd od BKV (priemer, medián, smerodajná odchýlka, minimum, maximum),
+čas behu, priebeh najlepšej hodnoty počas iterácií 1.~fázy, variabilita medzi seedmi.
+Porovnanie implementácií: Wilcoxonov test so znamienkovými poradiami \cite{Wilcoxon1945}
+na priemeroch cez seedy, pár = inštancia (seedy medzi implementáciami nie sú párové).
+Zhodu so vzorom skupín v článku meriame Spearmanovým korelačným koeficientom cez 72 skupín.
+
+% =====================================================================================
 \section{Dosiahnuté výsledky}
-% TODO
+\paragraph{Presná zhoda s programom autorov.} Konštrukcia, prvý local search a NPS-set
+z konštrukcie (všetko deterministické) dali na všetkých 2160 inštanciách rovnaké $\Csum$ ako
+program autorov. 2.~fáza a NPS-set spustené z permutácie, ktorú našiel program autorov, dali
+na 86 kontrolných inštanciách (aspoň jedna z každej zo 72 skupín) rovnaké $\Csum$, $C_{\max}$
+a v 2.~fáze aj identické poradie na každom stroji. Na Obr.~3 článku 2.~fáza zlepší najlepšiu
+permutáciu z 1194 na optimum 1191, ktoré potvrdil aj MIP.
 
+\paragraph{Kvalita riešení.} Tabuľka~\ref{tab:rpd_by_n} sumarizuje priemerné relatívne
+odchýlky od BKV podľa počtu jobov, Obr.~\ref{fig:rpd} ich zobrazuje spolu s hodnotami článku;
+plné tabuľky po 72 skupinách sú v prílohe (Tab.~\ref{tab:rpd_iga}--\ref{tab:rpd_nps}). Vo
+všetkých veľkostiach platí rovnaké poradie ako v článku: IGA $<$ IGA+NPS-set $<$ IGA0. Naša
+implementácia a program autorov dávajú prakticky totožné priemery (rozdiely do 0,03 p.\,b.)
+a korelácia ich výsledkov cez 72 skupín je 0,99--1,00.
+
+\input{tables/rpd_by_n}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=.8\textwidth]{figures/rpd_by_n.pdf}
+\caption{Priemerná relatívna odchýlka od BKV podľa $n$ pre tri varianty: naša implementácia
+(plná čiara), program autorov na našich inštanciách (čiarkovaná) a hodnoty z článku (bodkovaná).}
+\label{fig:rpd}
+\end{figure}
+
+\paragraph{Prínos 2.~fázy a NPS-set.} 2.~fáza zlepšila výsledok 1.~fázy v 88,2\,\% behov
+a nikdy ho nezhoršila; NPS-set zlepšil permutáciu v 55,7\,\% behov. IGA bolo lepšie než
+IGA+NPS-set v 80,8\,\% behov a horšie v 6,9\,\%. Všetky tri rozdiely sú štatisticky
+významné (Wilcoxon, $p<10^{-10}$). Zlepšenie oproti IGA0 klesá s $n$ (pre IGA z 2,27 p.\,b.\ pri
+$n=5$ na 0,73 p.\,b.\ pri $n=100$), lebo pri väčšom počte jobov pripadá na jeden job menej
+medzier, ktoré sa dajú zaplniť.
+
+\paragraph{Optimá pre $n=5$.} MIP s HiGHS vyriešil optimálne 356 z 360 inštancií s $n=5$
+(priemerne 15\,s; neoptimálne sú 4 inštancie s $m=30$, $r=0{,}2$, kde solver v limite
+150\,s nájde lepšie riešenie než IGA, ale optimalitu nedokáže). Na inštanciách s dokázaným
+optimom je IGA od optima v priemere 1,20\,\% a optimum nájde v 46\,\% behov; odchýlka rastie
+s počtom strojov (z 0,0--0,2\,\% pri $m=5$ na 1,5--2,4\,\% pri $m=30$). IGA je pri $n=5$
+v praxi deterministický -- všetky seedy dajú ten istý výsledok: 1.~fáza s 3000 iteráciami
+nájde pri 120 možných permutáciách najlepšiu permutáciu (overené hrubou silou na všetkých 360 inštanciách) a zvyšnú
+odchýlku od optima spôsobuje obmedzené okolie 2.~fázy (posun o jednu pozíciu).
+
+\paragraph{Čas behu a konvergencia.} Priemerné časy po $n$ sú v Tab.~\ref{tab:time} (príloha);
+na rovnakom počítači je naša implementácia rovnako rýchla ako program autorov
+(Obr.~\ref{fig:time}) -- okrem $n=5$, kde dominuje réžia Pythonu (cca 0,25\,s na beh), a
+$n=100$, kde je o \,6\,\% pomalšia. 2.~fáza tvorí 20\,\% nášho času pri $n=100$
+a menej pri menších inštanciách. Obr.~\ref{fig:conv} ukazuje priebeh 1.~fázy: pri $n\le 10$
+sa najlepšie riešenie nájde v prvých percentách rozpočtu a ďalej sa nemení, pri $n\ge 30$ sa
+zlepšuje počas celého rozpočtu -- väčší rozpočet by pomohol práve pri veľkých inštanciách,
+čo zodpovedá experimentu s IGA$^+$ v článku (Tab.~5).
+
+\begin{figure}[ht]
+\centering
+\begin{minipage}{.48\textwidth}\centering
+\includegraphics[width=\textwidth]{figures/convergence.pdf}
+\caption{Priebeh najlepšieho $\Csum$ v 1.~fáze (priemer cez inštancie s $r=0{,}3$, $m=20$
+a seedy), relatívne k BKV.}\label{fig:conv}
+\end{minipage}\hfill
+\begin{minipage}{.46\textwidth}\centering
+\includegraphics[width=\textwidth]{figures/time_scatter.pdf}
+\caption{Čas behu na inštanciu (priemer cez seedy): naša implementácia vs.\ program autorov,
+obe na tom istom počítači. Farba = $n$.}\label{fig:time}
+\end{minipage}
+\end{figure}
+
+\paragraph{Stabilita medzi seedmi.} Pre $n=5$ dávajú všetky seedy rovnaký výsledok, pre $n=10$ takmer rovnaký (sm.\ odchýlka 0,01 p.\,b.).
+Pre väčšie inštancie je smerodajná odchýlka rpd jednej inštancie cez seedy 0,1--0,5
+p.\,b.; priemer skupiny sa však medzi seedmi mení len o stotiny (Obr.~\ref{fig:seed}).
+Výsledok článku s jediným seedom je preto pre priemery skupín reprezentatívny, pre jednotlivé
+inštancie nie.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=.7\textwidth]{figures/seed_box.pdf}
+\caption{Priemerná rpd IGA pri jednotlivých seedoch (každý bod = jeden seed, priemer cez 360
+inštancií s daným $n$).}\label{fig:seed}
+\end{figure}
+
+% =====================================================================================
 \section{Porovnanie s výsledkami autorov}
-% TODO: Tab. 3, 4, 6 z článku (data/paper_results).
+\paragraph{Program autorov na našich dátach.} Toto je najsilnejšie porovnanie, lebo vylučuje
+vplyv inštancií aj BKV. Wilcoxonov test na priemeroch cez seedy (pár = inštancia, 2160 párov)
+nezamieta na hladine 0,05 zhodu pre IGA0 ($p=0{,}12$), IGA+NPS-set ($p=0{,}20$) ani IGA
+($p=0{,}089$). Pri IGA je naša implementácia horšia na mierne viac inštanciách (661) než lepšia
+(595), rozdiel priemerov je však najviac 0,03 p.\,b.\ v ktorejkoľvek veľkosti -- rádovo menej
+než rozptyl medzi seedmi. Nevýznamný test sám osebe zhodu nedokazuje, preto uvádzame aj veľkosť rozdielu: priemerný rozdiel rpd (naša $-$ autori, pár = inštancia) je 0,003 p.\,b. pre IGA0 (95\,\% interval spoľahlivosti $[-0{,}005;\,0{,}012]$), 0,003 pre IGA+NPS-set ($[-0{,}006;\,0{,}013]$) a 0,006 pre IGA ($[-0{,}004;\,0{,}016]$). Prípadný rozdiel je teda nanajvýš 0,02 p.\,b., čo je prakticky zanedbateľné v porovnaní s prínosom 2.~fázy (1,3 p.\,b.) aj s rozptylom medzi seedmi.
 
+\paragraph{Tabuľky článku.} Hodnoty z článku sú na \emph{originálnych} inštanciách a s inými
+BKV, preto sa dajú porovnať len trendy a veličiny nezávislé od BKV:
+\begin{itemize}
+\item \textbf{Prínos 2.~fázy a NPS-set} (rozdiel rpd voči IGA0 nezávisí od BKV, ak sú BKV
+  podobné hodnotám riešení): IGA 1,33 p.\,b.\ (článok 1,32), IGA+NPS-set 0,49 p.\,b.\
+  (článok 0,48); zhoda platí aj po jednotlivých $n$ (Tab.~\ref{tab:improvement_iga}
+  a \ref{tab:improvement_nps} v prílohe). Tvrdenie článku, že IGA0 je o 1--2 p.\,b.\ horšie
+  a NPS-set zlepšuje o 0,3--0,5 p.\,b., sa potvrdilo.
+\item \textbf{$n=5$}: BKV článku sú tu optimá (MIP vyriešil všetky inštancie), naše tiež
+  (356 z 360) -- odchýlka IGA 1,20\,\% vs.\ 1,26\,\% v článku, po 12 skupinách sa líši
+  najviac o 0,6 p.\,b.\ a pri $m=5$ až $30$ rastie rovnako.
+\item \textbf{Absolútne rpd pre $n\ge 10$} sú u nás nižšie (IGA 0,64\,\% vs.\ 1,05\,\%;
+  pri $n=10$ až 0,07 vs.\ 2,09\,\%), preto je aj Spearmanova korelácia so skupinami článku
+  pre IGA nízka ($-0{,}03$), zatiaľ čo pre IGA0 je vysoká (0,76). Dôvodom sú BKV: v článku pre
+  $n=10$--50 pochádzajú z MIP štartovaného z IGA a z IGA$^+$, ktoré našli lepšie riešenia mimo
+  okolia 2.~fázy; u nás sú BKV pre $n\ge 10$ najlepšie riešenia samotného IGA, takže pri
+  $n=10$ a 20, kde IGA nájde to isté riešenie takmer v každom behu, má odchýlku blízku nule.
+  Pre $n\ge 30$ naopak absolútne rpd závisí od počtu behov, z ktorých BKV berieme: pri $n=50$
+  dáva IGA so seedmi 1--3 (BKV zo 6 behov na inštanciu) rpd 0,64\,\%, s 10 seedmi (20 behov)
+  0,94\,\% oproti 0,43\,\% v článku; pri $n=100$ s 3 seedmi 0,65 vs.\ 0,78\,\%. Absolútne
+  hodnoty preto s článkom porovnávať nemožno.
+\item \textbf{Časy} (Tab.~\ref{tab:time}): na našom notebooku sú 2--4-krát dlhšie než v článku (4-krát pri $n=10$, 2-krát pri $n=100$)
+  pre obe implementácie rovnako, čo zodpovedá rozdielu hardvéru (i5-6300U, 4 paralelné behy
+  na 2 jadrách vs.\ i7-13700). Pomer časov medzi skupinami (rast s $n$ aj $m$) je ako v Tab.~4.
+\end{itemize}
+
+% =====================================================================================
 \section{Diskusia a možné zdroje rozdielov}
-% TODO
+\paragraph{Čo sa replikovať podarilo.} Algoritmus je opísaný dostatočne na to, aby sa dal
+implementovať, a s doplnením niekoľkých detailov z kódu autorov (Sekcia~\ref{sec:impl})
+dostaneme bit po bite rovnaké deterministické časti. Všetky kvalitatívne závery článku
+platia: 2.~fáza je účinná a lepšia než NPS-set, 1.~fáza samotná je slabšia o 1--2 p.\,b.,
+na malých inštanciách IGA nedosahuje optimum o 1--2\,\% a rozdiel rastie s $m$.
 
+\paragraph{Zdroje rozdielov.}
+(1) \emph{BKV} -- hlavný zdroj rozdielu absolútnych hodnôt: závisia od toho, aké metódy
+a koľko behov do nich prispeli (pozri vyššie). Rozdiely rpd medzi variantmi na to citlivé nie sú,
+lebo všetky varianty pochádzajú z toho istého behu a delia sa tou istou BKV. (2) \emph{Inštancie} -- naše sú vygenerované rovnakým postupom,
+ale nie sú to tie isté čísla; ovplyvní to jednotlivé skupiny (napr.\ rpd IGA0 pri $n=5$
+3,48 vs.\ 3,23\,\%), nie trendy. (3) \emph{Detaily, ktoré článok neuvádza} -- bez kódu autorov
+by sme pravidlá pri zhode, poradie kandidátov a prijímanie celého kroku 2.~fázy museli
+odhadnúť; pri malých inštanciách s veľa zhodami by to výsledky posunulo. (4) \emph{Náhoda}
+-- jeden seed v článku stačí na priemery skupín, nie na jednotlivé inštancie.
+(5) \emph{Hardvér a jazyk} -- ovplyvňujú len čas; rozpočet je daný počtom iterácií, takže
+kvalita od rýchlosti nezávisí.
+
+\paragraph{Pozorovanie navyše.} IGA+NPS-set je v 6,9\,\% behov lepší než IGA. 2.~fáza sa
+zastaví v prvom lokálnom minime a NPS-set dokáže presunúť operáciu aj o viac pozícií naraz.
+Kombinácia (NPS-set ako štart 2.~fázy) by mohla priniesť malé zlepšenie -- článok ju neskúma.
+
+% =====================================================================================
 \section{Obmedzenia experimentov}
-% TODO
+\begin{itemize}
+\item Nemáme originálne inštancie H\&N, takže priame porovnanie po inštanciách s článkom nie
+  je možné; nahrádza ho beh pôvodného programu na našich dátach.
+\item BKV nezahŕňajú MIP pre $n\ge 10$, IGA$^+$ ani 2SA, preto absolútne rpd pre $n\ge 10$ nie
+  sú porovnateľné s článkom.
+\item Pre $n=100$ máme 3 seedy (výpočtový čas: jeden beh $n=100$, $m=30$ trvá na našom
+  počítači asi minútu); pre $n\le 50$ 10 (1--10).
+\item 2SA, IGA$^+$, MIP s CPLEX-om pre $n\ge 10$ a tabuľky 7--8 (zásobníky, JRI) sme
+  nereplikovali. Pre MIP používame HiGHS a hornú hranicu z IGA namiesto warm startu; 4 inštancie
+  zostali bez dôkazu optimality.
+\item Časy sú merané na notebooku pri 4 paralelných behoch na 2 fyzických jadrách, sú preto
+  len orientačné.
+\end{itemize}
 
+% =====================================================================================
 \section{Záver}
-% TODO
+Replikácia bola úspešná. Nezávislá implementácia IGA v Pythone sa v deterministických
+častiach presne zhoduje s pôvodným programom a v náhodných častiach sa od neho štatisticky
+nelíši; rozdiel priemernej odchýlky je nanajvýš 0,02 p.\,b.\ (95\,\% interval spoľahlivosti). Hlavné tvrdenia článku sme potvrdili: nepermutačná 2.~fáza zlepšuje permutačné
+riešenia o 1,3 p.\,b.\ (článok 1,3), je účinnejšia než NPS-set (0,5 p.\,b., článok 0,5) a na
+malých inštanciách je IGA od optima v priemere 1,2\,\% (článok 1,3\,\%). Absolútne odchýlky
+pre stredne veľké inštancie sa líšia kvôli odlišným referenčným hodnotám, nie kvôli algoritmu.
+Pre budúcu prácu by bolo vhodné získať originálne inštancie a doplniť BKV z exaktných metód.
 
 \bibliographystyle{plain}
 \bibliography{../CITATION}
+
+\appendix
+\section{Podrobné tabuľky po skupinách}
+\input{tables/rpd_iga}
+\input{tables/rpd_iga0}
+\input{tables/rpd_nps}
+\input{tables/improvement_iga}
+\input{tables/improvement_nps}
+\input{tables/time}
 
 \end{document}
