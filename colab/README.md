@@ -33,9 +33,10 @@ https://colab.research.google.com/github/svihuralukas/replication-npfs-mo/blob/e
 
 ## Odhad času
 
-Na štandardnom CPU runtime (2 vCPU) približne **2–2,5 h na jeden seed** (naša implementácia
-~1 h + program autorov ~1–1,5 h). Session so `SEEDS = [4, 5]` teda ~4–5 h. S High-RAM (viac jadier)
-úmerne rýchlejšie. Priebeh vidno vo výstupe bunky 5 (`k/360 hotových`).
+Na štandardnom CPU runtime (2 vCPU) približne **3 h na jeden seed** (naša implementácia ~1,5 h
++ program autorov ~1,5 h; namerané v simulácii Colabu – Ubuntu 22.04, 2 CPU). Session so
+`SEEDS = [4, 5]` teda ~6 h, čo sa zmestí do noci. S High-RAM (viac jadier) úmerne rýchlejšie.
+Prípravné bunky 1–4 trvajú spolu ~5 min. Priebeh vidno vo výstupe bunky 5 (`k/360 hotových`).
 
 ## Výstupy (na Google Drive, priečinok `npfs-mo-colab/`)
 
