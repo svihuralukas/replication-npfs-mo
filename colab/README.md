@@ -6,7 +6,10 @@ Na notebooku máme pre n = 100 len seedy 1–3 (jeden beh n = 100, m = 30 trvá 
 aj pôvodný C++ program autorov – a výsledky ukladá na Google Drive.
 
 **Otvoriť v Colabe:**
-https://colab.research.google.com/github/svihuralukas/replication-npfs-mo/blob/etapa-2-faza2-npsset/colab/n100_seedy.ipynb
+https://colab.research.google.com/github/svihuralukas/replication-npfs-mo/blob/main/colab/n100_seedy.ipynb
+(kým nie je PR #1 zlúčený do `main`, použi
+https://colab.research.google.com/github/svihuralukas/replication-npfs-mo/blob/etapa-2-faza2-npsset/colab/n100_seedy.ipynb;
+notebook sám klonuje `main` a ak tam 2. etapa ešte nie je, použije vetvu PR)
 
 ## Postup
 

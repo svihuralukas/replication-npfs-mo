@@ -79,6 +79,7 @@ python src/run_mip.py --instances "instances/generated/*_05_[0-9][0-9]_[0-9][0-9
 
 python analysis/verify_exact.py            # presná zhoda deterministických častí s programom autorov
 python analysis/analyze_results.py         # tabuľky, štatistiky, grafy → results/analysis, report/
+# PDF reportu: cd report && latexmk -pdf main.tex  (babel slovak – v Linuxe balík texlive-lang-czechslovak)
 
 # 1. etapa (IGA0, results/iga0_check_*.csv) vznikla staršou verziou runnera (commit 56c39a8)
 python analysis/compare_iga0.py            # porovnanie + Wilcoxonov test

@@ -93,6 +93,10 @@ Wilcoxonov test, naša vs. autori (pár = inštancia, priemer ΣC cez spoločné
   IGA0: lepšie 592, rovnaké 910, horšie 658; Wilcoxon p = 0.122 (rozdiel NIE JE významný na hladine 0,05)
   IGA+NPS-set: lepšie 611, rovnaké 906, horšie 643; Wilcoxon p = 0.204 (rozdiel NIE JE významný na hladine 0,05)
   IGA: lepšie 595, rovnaké 904, horšie 661; Wilcoxon p = 0.0891 (rozdiel NIE JE významný na hladine 0,05)
+Rozdiel priemernej rpd naša − autori [p. b.] (pár = inštancia), 95 % interval spoľahlivosti (t):
+  IGA0: 0.0034 [-0.0048; 0.0116]
+  IGA+NPS-set: 0.0034 [-0.0059; 0.0127]
+  IGA: 0.0062 [-0.0037; 0.0161]
 Wilcoxonov test, prínos 2. fázy a NPS-set v našej implementácii (pár = beh):
   IGA vs IGA0: lepšie 16834, rovnaké 2246, horšie 0; Wilcoxon p = 0 (rozdiel JE významný na hladine 0,05)
   IGA+NPS-set vs IGA0: lepšie 10630, rovnaké 8450, horšie 0; Wilcoxon p = 0 (rozdiel JE významný na hladine 0,05)

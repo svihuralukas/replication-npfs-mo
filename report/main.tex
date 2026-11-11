@@ -13,6 +13,7 @@
 \date{\today}
 
 \newcommand{\Csum}{\sum C_j}
+\setlength{\emergencystretch}{2em}  % riadky s dlhými názvami súborov nepretečú za okraj
 
 \begin{document}
 \maketitle
@@ -27,11 +28,11 @@ sme nezávisle implementovali v Pythone a spustili na 2160 inštanciách vygener
 Henneberga a Neufelda; na rovnakých dátach sme spustili aj pôvodný C++ program autorov
 a pre $n=5$ sme MIP modelom z článku vypočítali optimá. Deterministické časti našej
 implementácie sa s programom autorov zhodujú presne (vrátane celých nepermutačných rozvrhov),
-výsledky náhodných častí sa štatisticky nelíšia (Wilcoxon, $p\ge 0{,}09$). Kľúčové tvrdenia článku
+výsledky náhodných častí sa štatisticky nelíšia (Wilcoxon, $p\ge 0{,}089$) a rozdiel priemernej odchýlky je nanajvýš 0,02 percentuálneho bodu (95\,\% interval spoľahlivosti). Kľúčové tvrdenia článku
 sa potvrdili: 2. fáza zlepšuje permutačné riešenia v priemere o 1,33 percentuálneho bodu
 (článok 1,32), NPS-set o 0,49 (článok 0,48) a na inštanciách s $n=5$ je IGA od optima
 v priemere 1,20\,\% (článok 1,26\,\%). Absolútne odchýlky pre $n\ge 10$ sa s článkom porovnať nedajú,
-lebo naše najlepšie známe hodnoty pochádzajú z iných metód a iného počtu behov; čas behu je na našom hardvéri asi dvojnásobný.
+lebo naše najlepšie známe hodnoty pochádzajú z iných metód a iného počtu behov; čas behu je na našom hardvéri 2- až 4-násobný.
 \end{abstract}
 
 % =====================================================================================
@@ -134,11 +135,13 @@ Tab.~4 (časy), Tab.~5 (MIP) a Tab.~6 (ablácie).
 % =====================================================================================
 \section{Naša implementácia}\label{sec:impl}
 
+\begin{sloppypar}
 Implementácia je v Pythone, výpočtové jadrá sú kompilované cez Numba \cite{Lam2015}. Moduly:
 \texttt{evaluate.py} (výpočet $C_{ij}$, $C_{\max}$, $\Csum$ pre permutačné aj nepermutačné
 rozvrhy), \texttt{iga.py} (1.~fáza), \texttt{nonperm.py} (2.~fáza), \texttt{nps\_set.py}
 (NPS-set), \texttt{mip.py} (MIP model), \texttt{run\_experiments.py} (paralelný runner).
 Nepermutačný rozvrh ukladáme ako maticu $m\times n$ poradí na strojoch.
+\end{sloppypar}
 
 \paragraph{Detaily doplnené z kódu autorov.} Článok niektoré detaily neuvádza; prevzali sme ich
 z verejného kódu autorov \cite{RittRossit2024code} (kód sme nekopírovali, ale prepísali podľa
@@ -225,7 +228,7 @@ odchýlky od BKV podľa počtu jobov, Obr.~\ref{fig:rpd} ich zobrazuje spolu s h
 plné tabuľky po 72 skupinách sú v prílohe (Tab.~\ref{tab:rpd_iga}--\ref{tab:rpd_nps}). Vo
 všetkých veľkostiach platí rovnaké poradie ako v článku: IGA $<$ IGA+NPS-set $<$ IGA0. Naša
 implementácia a program autorov dávajú prakticky totožné priemery (rozdiely do 0,03 p.\,b.)
-a korelácia ich výsledkov cez 72 skupín je 0,97--1,00.
+a korelácia ich výsledkov cez 72 skupín je 0,99--1,00.
 
 \input{tables/rpd_by_n}
 
@@ -276,7 +279,7 @@ obe na tom istom počítači. Farba = $n$.}\label{fig:time}
 \end{minipage}
 \end{figure}
 
-\paragraph{Stabilita medzi seedmi.} Pre $n\le 10$ dávajú všetky seedy rovnaký výsledok.
+\paragraph{Stabilita medzi seedmi.} Pre $n=5$ dávajú všetky seedy rovnaký výsledok, pre $n=10$ takmer rovnaký (sm.\ odchýlka 0,01 p.\,b.).
 Pre väčšie inštancie je smerodajná odchýlka rpd jednej inštancie cez seedy 0,1--0,5
 p.\,b.; priemer skupiny sa však medzi seedmi mení len o stotiny (Obr.~\ref{fig:seed}).
 Výsledok článku s jediným seedom je preto pre priemery skupín reprezentatívny, pre jednotlivé
@@ -296,7 +299,7 @@ vplyv inštancií aj BKV. Wilcoxonov test na priemeroch cez seedy (pár = inšta
 nezamieta na hladine 0,05 zhodu pre IGA0 ($p=0{,}12$), IGA+NPS-set ($p=0{,}20$) ani IGA
 ($p=0{,}089$). Pri IGA je naša implementácia horšia na mierne viac inštanciách (661) než lepšia
 (595), rozdiel priemerov je však najviac 0,03 p.\,b.\ v ktorejkoľvek veľkosti -- rádovo menej
-než rozptyl medzi seedmi. Zhodu sme teda dosiahli v priemere aj v rozdelení výsledkov.
+než rozptyl medzi seedmi. Nevýznamný test sám osebe zhodu nedokazuje, preto uvádzame aj veľkosť rozdielu: priemerný rozdiel rpd (naša $-$ autori, pár = inštancia) je 0,003 p.\,b. pre IGA0 (95\,\% interval spoľahlivosti $[-0{,}005;\,0{,}012]$), 0,003 pre IGA+NPS-set ($[-0{,}006;\,0{,}013]$) a 0,006 pre IGA ($[-0{,}004;\,0{,}016]$). Prípadný rozdiel je teda nanajvýš 0,02 p.\,b., čo je prakticky zanedbateľné v porovnaní s prínosom 2.~fázy (1,3 p.\,b.) aj s rozptylom medzi seedmi.
 
 \paragraph{Tabuľky článku.} Hodnoty z článku sú na \emph{originálnych} inštanciách a s inými
 BKV, preto sa dajú porovnať len trendy a veličiny nezávislé od BKV:
@@ -319,7 +322,7 @@ BKV, preto sa dajú porovnať len trendy a veličiny nezávislé od BKV:
   dáva IGA so seedmi 1--3 (BKV zo 6 behov na inštanciu) rpd 0,64\,\%, s 10 seedmi (20 behov)
   0,94\,\% oproti 0,43\,\% v článku; pri $n=100$ s 3 seedmi 0,65 vs.\ 0,78\,\%. Absolútne
   hodnoty preto s článkom porovnávať nemožno.
-\item \textbf{Časy} (Tab.~\ref{tab:time}): na našom notebooku sú 2--3-krát dlhšie než v článku
+\item \textbf{Časy} (Tab.~\ref{tab:time}): na našom notebooku sú 2--4-krát dlhšie než v článku (4-krát pri $n=10$, 2-krát pri $n=100$)
   pre obe implementácie rovnako, čo zodpovedá rozdielu hardvéru (i5-6300U, 4 paralelné behy
   na 2 jadrách vs.\ i7-13700). Pomer časov medzi skupinami (rast s $n$ aj $m$) je ako v Tab.~4.
 \end{itemize}
@@ -330,7 +333,7 @@ BKV, preto sa dajú porovnať len trendy a veličiny nezávislé od BKV:
 implementovať, a s doplnením niekoľkých detailov z kódu autorov (Sekcia~\ref{sec:impl})
 dostaneme bit po bite rovnaké deterministické časti. Všetky kvalitatívne závery článku
 platia: 2.~fáza je účinná a lepšia než NPS-set, 1.~fáza samotná je slabšia o 1--2 p.\,b.,
-na malých inštanciách IGA nedosahuje optimum o 1--2\,\% a rozdiel rastie s $m$ a $r$.
+na malých inštanciách IGA nedosahuje optimum o 1--2\,\% a rozdiel rastie s $m$.
 
 \paragraph{Zdroje rozdielov.}
 (1) \emph{BKV} -- hlavný zdroj rozdielu absolútnych hodnôt: závisia od toho, aké metódy
@@ -368,7 +371,7 @@ Kombinácia (NPS-set ako štart 2.~fázy) by mohla priniesť malé zlepšenie --
 \section{Záver}
 Replikácia bola úspešná. Nezávislá implementácia IGA v Pythone sa v deterministických
 častiach presne zhoduje s pôvodným programom a v náhodných častiach sa od neho štatisticky
-nelíši. Hlavné tvrdenia článku sme potvrdili: nepermutačná 2.~fáza zlepšuje permutačné
+nelíši; rozdiel priemernej odchýlky je nanajvýš 0,02 p.\,b.\ (95\,\% interval spoľahlivosti). Hlavné tvrdenia článku sme potvrdili: nepermutačná 2.~fáza zlepšuje permutačné
 riešenia o 1,3 p.\,b.\ (článok 1,3), je účinnejšia než NPS-set (0,5 p.\,b., článok 0,5) a na
 malých inštanciách je IGA od optima v priemere 1,2\,\% (článok 1,3\,\%). Absolútne odchýlky
 pre stredne veľké inštancie sa líšia kvôli odlišným referenčným hodnotám, nie kvôli algoritmu.

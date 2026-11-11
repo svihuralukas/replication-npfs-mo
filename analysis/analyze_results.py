@@ -39,6 +39,7 @@ import matplotlib.pyplot as plt   # noqa: E402
 import numpy as np                # noqa: E402
 import pandas as pd               # noqa: E402
 from scipy.stats import spearmanr, wilcoxon   # noqa: E402
+from scipy.stats import t as t_dist           # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 NS = [5, 10, 20, 30, 50, 100]
@@ -457,6 +458,13 @@ def main() -> None:
     per_inst = df.groupby(["instance", "impl"])[[f"{v}_ft" for v in VARIANTS]].mean().unstack("impl")
     for v, vname in VARIANTS.items():
         wilcoxon_line(per_inst[(f"{v}_ft", "ours")], per_inst[(f"{v}_ft", "authors")], vname)
+    # nevýznamný test zhodu nedokazuje – preto aj veľkosť rozdielu s 95 % intervalom spoľahlivosti
+    say("Rozdiel priemernej rpd naša − autori [p. b.] (pár = inštancia), 95 % interval spoľahlivosti (t):")
+    per_rpd = df.groupby(["instance", "impl"])[[f"rpd_{v}" for v in VARIANTS]].mean().unstack("impl")
+    for v, vname in VARIANTS.items():
+        d = per_rpd[(f"rpd_{v}", "ours")] - per_rpd[(f"rpd_{v}", "authors")]
+        half = t_dist.ppf(0.975, len(d) - 1) * d.std(ddof=1) / np.sqrt(len(d))
+        say(f"  {vname}: {d.mean():.4f} [{d.mean() - half:.4f}; {d.mean() + half:.4f}]")
     say("Wilcoxonov test, prínos 2. fázy a NPS-set v našej implementácii (pár = beh):")
     ours = df[df.impl == "ours"]
     wilcoxon_line(ours.iga_ft, ours.iga0_ft, "IGA vs IGA0")
