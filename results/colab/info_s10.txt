@@ -1,0 +1,2 @@
+2026-11-11T12:40:34.466474 start s10 cpu='Intel(R) Xeon(R) CPU @ 2.20GHz' cores=12 python=3.13.16
+2026-11-11T13:04:53.757556 done s10

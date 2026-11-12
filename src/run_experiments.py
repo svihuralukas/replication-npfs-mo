@@ -88,6 +88,8 @@ def main() -> None:
     ap.add_argument("--min-n", type=int, default=None, help="vynechať inštancie s menej jobmi")
     ap.add_argument("--max-n", type=int, default=None, help="vynechať inštancie s viac jobmi")
     ap.add_argument("--iter-factor", type=float, default=None)
+    ap.add_argument("--sampling", choices=["uniform", "autori"], default="uniform",
+                    help="výber odstránených jobov v perturbácii (src/iga.py); 'autori' len na experiment")
     ap.add_argument("--jobs", type=int, default=os.cpu_count())
     ap.add_argument("--out", default="results/iga_ours.csv")
     ap.add_argument("--history", default=None,
@@ -99,7 +101,8 @@ def main() -> None:
     params = IGAParams(alpha=alg.get("alpha", IGAParams.alpha),
                        d_max=alg.get("d_max", IGAParams.d_max),
                        iter_factor=(args.iter_factor if args.iter_factor is not None
-                                    else alg.get("iter_factor", IGAParams.iter_factor)))
+                                    else alg.get("iter_factor", IGAParams.iter_factor)),
+                       sampling=args.sampling)
     seeds = args.seeds or cfg.get("experiment", {}).get("seeds", [1])
     patterns = args.instances or [str(Path(cfg.get("instances", {}).get("dir", "instances/generated"))
                                       / "*.txt")]

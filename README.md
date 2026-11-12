@@ -11,12 +11,12 @@ Tím: Lukáš Švihura, Dominik Keil, Ján Hrbál.
 > scheduling with missing operations.* Computers & Operations Research 170 (2024), 106742.
 > https://doi.org/10.1016/j.cor.2024.106742
 
-Pôvodný kód (C++) a výsledky autorov po inštanciách: https://github.com/mrpritt/npfs-mo
-(samotné inštancie tam nie sú, pozri [instances/README.md](instances/README.md)).
+Pôvodný kód (C++), inštancie a výsledky autorov po inštanciách: https://github.com/mrpritt/npfs-mo
+(inštancie autori zverejnili na našu žiadosť 11. 11. 2026, pozri [instances/README.md](instances/README.md)).
 Metóda, parametre aj referenčné výsledky v tomto repozitári pochádzajú z uvedeného článku.
 Implementácia v `src/` je **naša vlastná** (Python), napísaná podľa opisu v článku.
-Podrobne, čo je od koho, je v [ATTRIBUTION.md](ATTRIBUTION.md); všetky referencie sú v
-[CITATION.bib](CITATION.bib).
+Podrobne, čo je od koho, je v [ATTRIBUTION.md](ATTRIBUTION.md); literatúra reportu je v
+[report/references.bib](report/references.bib).
 
 ## Problém v skratke
 
@@ -59,31 +59,58 @@ cmake --build build -j4
 
 ## Spustenie
 
-Všetko z koreňa repozitára:
+Všetko z koreňa repozitára.
 
 ```bash
-python -m pytest tests/                    # testy (142), vrátane zhody s kódom autorov
-python src/generate_instances.py           # vygeneruje 2160 inštancií do instances/generated/
-python src/compare_instances.py            # porovnanie s originálnymi inštanciami (vyžaduje ../npfs-mo)
+python -m pytest tests/                    # testy (143), vrátane zhody s kódom autorov
+```
 
-# 2. etapa – plné experimenty: IGA0, IGA+NPS-set a IGA naraz (parametre z config/experiment.yaml);
+### Hlavný experiment: pôvodné inštancie autorov
+
+```bash
+python src/fetch_original.py               # inštancie H&N + výsledky článku po inštanciách (z repozitára autorov)
+```
+
+Experiment (naša implementácia aj program autorov, všetky n, seedy 1–10) beží v Google Colabe:
+[colab/README.md](colab/README.md), notebook `colab/povodne_instancie.ipynb`. To isté lokálne
+(Linux/WSL alebo Docker pre program autorov, `reference/README.md`):
+
+```bash
+python src/run_experiments.py --instances "instances/original/*.txt" --seeds 1 2 3 4 5 6 7 8 9 10     --out results/original/iga_ours_local.csv
+python3 reference/run_authors.py --instances "instances/original/*.txt" --seeds 1 2 3 4 5 6 7 8 9 10     --out results/original/iga_authors_local.csv
+# doplnkový experiment: výber jobov v perturbácii ako v programe autorov (src/iga.py)
+python src/run_experiments.py --instances "instances/original/*.txt" --min-n 30 --sampling autori     --seeds 1 2 3 4 5 6 7 8 9 10 --out results/original/iga_ours-sampling-autori_local.csv
+
+python analysis/analyze_original.py        # tabuľky a grafy → results/original/analysis, report/
+```
+
+### Predbežný experiment: vlastné inštancie
+
+```bash
+python src/generate_instances.py           # vygeneruje 2160 inštancií do instances/generated/
+python src/compare_instances.py --table2 data/authors/table2.csv   # porovnanie s originálmi
+
+# IGA0, IGA+NPS-set a IGA naraz (parametre z config/experiment.yaml);
 # priebežný zápis, prerušený beh sa po opätovnom spustení dokončí
 python src/run_experiments.py --seeds 1 2 3 --out results/iga_ours.csv
 python src/run_experiments.py --seeds 4 5 6 7 8 9 10 --max-n 50 --out results/iga_ours.csv
 # to isté s programom autorov (Linux/WSL alebo Docker – reference/README.md)
 python3 reference/run_authors.py --instances "instances/generated/*.txt" --seeds 1 2 3 --out reference/iga_authors.csv
-python3 reference/run_authors.py --instances "instances/generated/*.txt" --seeds 4 5 6 7 8 9 10 --max-n 50 \
-    --out reference/iga_authors.csv
-# seedy 4–10 pre n = 100 v Google Colabe: colab/README.md (výsledky do results/colab/)
+python3 reference/run_authors.py --instances "instances/generated/*.txt" --seeds 4 5 6 7 8 9 10 --max-n 50     --out reference/iga_authors.csv
+# seedy 4–10 pre n = 100 v Google Colabe: colab/README.md (výsledky v results/colab/)
 python src/run_mip.py --instances "instances/generated/*_05_[0-9][0-9]_[0-9][0-9].txt" --out results/mip.csv  # optimá n = 5
 
 python analysis/verify_exact.py            # presná zhoda deterministických častí s programom autorov
 python analysis/analyze_results.py         # tabuľky, štatistiky, grafy → results/analysis, report/
-# PDF reportu: cd report && latexmk -pdf main.tex  (babel slovak – v Linuxe balík texlive-lang-czechslovak)
 
 # 1. etapa (IGA0, results/iga0_check_*.csv) vznikla staršou verziou runnera (commit 56c39a8)
 python analysis/compare_iga0.py            # porovnanie + Wilcoxonov test
 ```
+
+### Report
+
+`report/` je samostatný (main.tex, references.bib, tables/, figures/), dá sa nahrať do Overleafu.
+Lokálne: `cd report && latexmk -pdf main.tex` (babel slovak – v Linuxe balík texlive-lang-czechslovak).
 
 ## Stav
 
@@ -95,9 +122,10 @@ python analysis/compare_iga0.py            # porovnanie + Wilcoxonov test
 | IGA fáza 2 (non-permutation) | `src/nonperm.py` | hotové, z permutácie autorov presne ten istý rozvrh (86 inštancií zo všetkých 72 skupín) |
 | NPS-set | `src/nps_set.py` | hotové, presná zhoda s kódom autorov (86 inštancií + konštrukcia na všetkých) |
 | MIP (optimá pre n = 5) | `src/mip.py` | hotové, HiGHS namiesto CPLEX-u; Obr. 3 → 1191 |
-| Konfigurácia experimentov, plné experimenty | `config/experiment.yaml`, `results/`, `reference/iga_authors.csv` | hotové: seedy 1–10 pre n ≤ 50, 1–3 pre n = 100 |
-| Analýza | `analysis/analyze_results.py`, `results/analysis/` | hotové |
-| Report | `report/main.tex` | návrh, treba skontrolovať tímom |
+| Predbežný experiment (vlastné inštancie) | `config/experiment.yaml`, `results/`, `reference/iga_authors.csv`, `results/colab/` | hotové: seedy 1–10 pre všetky n |
+| Hlavný experiment (pôvodné inštancie) | `src/fetch_original.py`, `colab/povodne_instancie.ipynb`, `results/original/` | pripravené, beží v Colabe |
+| Analýza | `analysis/analyze_results.py` (vlastné), `analysis/analyze_original.py` (pôvodné) | hotové / čaká na dáta |
+| Report | `report/main.tex` | doplniť výsledky na pôvodných inštanciách |
 
 ## Štruktúra
 
@@ -105,11 +133,12 @@ python analysis/compare_iga0.py            # porovnanie + Wilcoxonov test
 analysis/           analýza výsledkov (porovnania, štatistiky, grafy)
 config/             parametre (generovanie inštancií, experimenty)
 data/paper_results/ výsledky autorov prepísané z článku (Tab. 3, 4, 6)
+data/authors/       výsledky článku po inštanciách (sťahuje src/fetch_original.py, nie je v gite)
 docs/PLAN.md        plán, metodológia
-instances/          inštancie: generated/ (naše), original/ (H&N, ak ich dostaneme)
+instances/          inštancie: original/ (H&N, sťahuje src/fetch_original.py), generated/ (naše)
 reference/          spúšťanie programu autorov a jeho výsledky na našich inštanciách
 report/             záverečný report (LaTeX)
-results/            výsledky našich experimentov (CSV, sú v gite)
+results/            výsledky experimentov (CSV, sú v gite): original/ hlavný, ostatné predbežný
 src/                naša implementácia (instance, evaluate, iga, nonperm, nps_set, mip, run_experiments)
 tests/              testy (príklady z článku, zhoda s kódom autorov, hrubá sila)
 ```

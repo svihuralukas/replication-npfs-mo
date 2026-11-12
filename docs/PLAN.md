@@ -18,36 +18,34 @@ interpretácii výsledkov.
 | 7 | Runner, config, logovanie (čas, konvergencia, seed) | `src/run_experiments.py` | ✅ všetky varianty, resume |
 | 8 | Referenčný beh C++ kódu autorov na našich inštanciách | `reference/run_authors.py` | ✅ (aj cez Docker, `reference/README.md`) |
 | 8b | Presné optimá pre n = 5 (MIP, HiGHS) | `src/mip.py`, `src/run_mip.py` | ✅ |
-| 9 | Experimenty | `results/`, `reference/iga_authors.csv` | ✅ |
+| 9 | Predbežný experiment na našich inštanciách | `results/`, `reference/iga_authors.csv`, `results/colab/` | ✅ seedy 1–10 pre všetky n |
 | 10 | Štatistiky, tabuľky, grafy, porovnanie s článkom | `analysis/analyze_results.py` | ✅ |
-| 11 | Report (6–10 strán) | `report/main.tex` | návrh – skontrolovať tímom |
+| 10b | **Hlavný experiment na pôvodných inštanciách** (zverejnené 11. 11. 2026) | `src/fetch_original.py`, `colab/povodne_instancie.ipynb`, `analysis/analyze_original.py`, `results/original/` | pripravené, čaká na beh v Colabe |
+| 11 | Report (6–10 strán) | `report/main.tex` | doplniť výsledky na pôvodných inštanciách, skontrolovať tímom |
 | 12 | Príprava na obhajobu | | |
 
 ## Metodológia experimentov
 
-**Inštancie.** Generujeme ich rovnako ako Henneberg & Neufeld (2016):
-n ∈ {5, 10, 20, 30, 50, 100}, m ∈ {5, 10, 20, 30}, procesné časy U[1, 99],
-podiel chýbajúcich operácií r ∈ {0.2, 0.3, 0.4}, 30 inštancií na skupinu, spolu 2160.
-Generátor, formát a seed sú zdokumentované v `instances/README.md`.
-
-Pozor: najlepšie známe hodnoty (BKV) z článku platia len pre **originálne** inštancie H&N.
-Tie v repozitári autorov **nie sú** (je tam kód a výsledky po inštanciách, nie inštancie),
-autorov sme o ne požiadali. Dovtedy porovnávame na našich inštanciách, na ktorých spúšťame
-aj pôvodný C++ program autorov – obe implementácie tak riešia tie isté dáta. BKV na našich
-inštanciách = najlepšia hodnota zo všetkých behov (naších aj autorov). S Tab. 3 a 6 článku
-porovnávame priemery po skupinách.
+**Inštancie.** Hlavný experiment beží na **pôvodných** 2160 inštanciách Henneberg & Neufeld (2016),
+ktoré autori na našu žiadosť zverejnili 11. 11. 2026 (`src/fetch_original.py` ich stiahne z ich
+repozitára na pevnom commite spolu s výsledkami článku po inštanciách). Predtým sme pracovali
+s vlastnými inštanciami vygenerovanými rovnakým postupom (n ∈ {5, 10, 20, 30, 50, 100},
+m ∈ {5, 10, 20, 30}, U[1, 99], r ∈ {0.2, 0.3, 0.4}, 30 inštancií na skupinu, `instances/README.md`);
+tento predbežný experiment ostáva v reporte ako doplnok (presná zhoda s programom autorov, MIP pre n = 5).
 
 **Parametre** (podľa článku, sekcia 5.1): `d = min{8, ⌈0.8n⌉}`, `α = 0.234375`,
 teplota `T = α · p̄ / 10`, rozpočet `15000/n` iterácií fázy 1. Sú v `config/experiment.yaml` a `src/iga.py` (`IGAParams`).
 
-**Opakovania.** Autori použili jediný seed (1). My: seedy 1–3 na všetkých inštanciách,
-pre n ≤ 50 navyše seedy 4–10 (spolu 10). Pre n = 100 ostávame pri 3 seedoch – jeden beh
-n = 100, m = 30 trvá na našom notebooku (i5-6300U, 4 paralelné behy) asi minútu v našej
-implementácii aj v programe autorov. Uvádzame priemer, medián, smerodajnú odchýlku, minimum
-a maximum. Výsledky po (inštancia, seed): `results/iga_ours.csv`, `reference/iga_authors.csv`.
+**Opakovania.** Autori použili jediný seed (1). My: seedy 1–10 na všetkých inštanciách, naša
+implementácia aj pôvodný program autorov. Pôvodné inštancie: všetko v Google Colabe
+(`colab/README.md`). Vlastné inštancie: notebook (i5-6300U, 4 paralelné behy) pre n ≤ 50
+a seedy 1–3 pre n = 100, seedy 4–10 pre n = 100 v Colabe (`results/colab/`).
+Uvádzame priemer, medián, smerodajnú odchýlku, minimum a maximum.
 
-**BKV.** Najlepšia hodnota zo všetkých našich behov (obe implementácie, všetky seedy a varianty)
-a z MIP pre n = 5 (`results/mip.csv`, HiGHS, 356 z 360 inštancií optimálne).
+**BKV.** Pôvodné inštancie: najlepšie známe hodnoty z článku (`data/authors/table3-bkv.csv`),
+takže odchýlky sú priamo porovnateľné s Tab. 3 a 6; pre n = 5 sú to optimá. Vlastné inštancie:
+najlepšia hodnota zo všetkých našich behov a z MIP pre n = 5 (`results/mip.csv`, HiGHS,
+356 z 360 inštancií optimálne).
 
 **Metrika.** Relatívna odchýlka `(v − b)/b` v percentách od BKV, ako v článku.
 Ďalej sledujeme čas behu, konvergenciu (ΣC<sub>j</sub> po iteráciách) a stabilitu medzi seedmi.
@@ -59,9 +57,12 @@ a z MIP pre n = 5 (`results/mip.csv`, HiGHS, 356 z 360 inštancií optimálne).
 
 **Známe rozdiely oproti článku** (dokumentujeme v reporte):
 - Python + numba namiesto C++, iný hardvér, takže časy nie sú priamo porovnateľné.
-- Ak bude výpočet príliš pomalý, zmenšíme výber inštancií (napr. n ≤ 50 alebo menej inštancií
-  na skupinu) a zdokumentujeme to.
-- Zrýchlenie podľa Duan et al. (2013) implementujeme len ak bude čas.
+- Iný generátor náhodných čísel (NumPy PCG64 namiesto `std::mt19937`).
+- Výber odstránených jobov v perturbácii: článok hovorí o náhodnom výbere, my vyberáme rovnomerne;
+  program autorov (`sample_floyd` v `random.hpp`) vyberá posledné pozície o niečo zriedkavejšie.
+  S 10 seedmi na vlastných inštanciách je naša implementácia pri n ≥ 30 horšia o ~0,01–0,03 p. b.
+  (Wilcoxon p < 0,05); session 4 v Colabe overuje, či to spôsobuje práve tento výber
+  (`--sampling autori`).
 
 ## Detaily doplnené z kódu autorov
 
@@ -94,4 +95,5 @@ operácia zmestí po čase pripravenosti jobu, t. j. najskorší prípustný za�
 - Formát inštancií: rovnaký ako H&N / autorov, pozri `instances/README.md`.
 - C++ kód autorov sa dá skompilovať (Boost, CMake, CPLEX netreba; treba `-DBOOST_ROOT=/usr`).
 - V originálnych inštanciách chýba presne round_half_up(r·n·m) operácií (zistené z ich `table2.csv`).
+- Pôvodné inštancie autori zverejnili 11. 11. 2026 (commit `24b5d23`); pomenovanie `r_n_m_i.txt` je rovnaké ako naše.
 - Termín odovzdania a obhajoby: doplniť.

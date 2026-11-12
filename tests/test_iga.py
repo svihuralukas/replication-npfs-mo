@@ -9,7 +9,8 @@ import pytest
 
 from evaluate import evaluate_permutation
 from iga import (IGAParams, best_insertion, construct, destruction_size, iga,
-                 iteration_limit, perturb, shift_local_search, temperature)
+                 iteration_limit, perturb, sample_positions_authors, shift_local_search,
+                 temperature)
 from instance import read_instance
 
 TESTS = Path(__file__).parent
@@ -90,6 +91,24 @@ def test_perturb_keeps_valid_permutation():
         seq, ft, ms = perturb(p, seq, 8, rng)
         assert sorted(seq) == list(range(p.shape[1]))
         assert evaluate_permutation(p, seq) == (ms, ft)
+    for _ in range(10):
+        seq, ft, ms = perturb(p, seq, 8, rng, sampling="autori")
+        assert sorted(seq) == list(range(p.shape[1]))
+        assert evaluate_permutation(p, seq) == (ms, ft)
+
+
+def test_authors_sampling_is_biased_like_sample_floyd():
+    # d = 1: sample_floyd autorov losuje z {0, ..., n-2}, posledná pozícia sa nevyberie nikdy
+    rng = np.random.default_rng(1)
+    picks = {int(sample_positions_authors(10, 1, rng)[0]) for _ in range(2000)}
+    assert picks == set(range(9))
+    # d = 8, n = 100: posledná pozícia s pravdepodobnosťou 7/99 namiesto 8/100
+    counts = np.zeros(100)
+    for _ in range(20000):
+        pos = sample_positions_authors(100, 8, rng)
+        assert len(pos) == 8 and len(set(pos.tolist())) == 8
+        counts[pos] += 1
+    assert abs(counts[-1] / 20000 - 7 / 99) < 0.006
 
 
 @pytest.mark.parametrize("name", ["0.2_10_05_03", "0.4_30_10_00"])

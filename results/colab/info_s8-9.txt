@@ -1,0 +1,2 @@
+2026-11-11T11:39:19.452550 start s8-9 cpu='Intel(R) Xeon(R) CPU @ 2.20GHz' cores=12 python=3.13.16
+2026-11-11T12:28:22.835313 done s8-9
