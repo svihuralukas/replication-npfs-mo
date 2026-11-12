@@ -3,7 +3,7 @@
 Semestrálne zadanie 1 z predmetu **Metódy optimalizácie** – *Analýza a experimentálne riešenie
 optimalizačnej úlohy*, **Variant A (replikácia výsledkov)**.
 
-Tím: Lukáš, Dominik, Jano.
+Tím: Lukáš Švihura, Dominik Keil, Ján Hrbál.
 
 ## Replikovaný článok
 
