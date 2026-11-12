@@ -20,7 +20,9 @@ notebook sám klonuje `main` a ak tam ešte nie je `src/fetch_original.py`, pou�
 1. Otvor odkaz (prihlásený do Google účtu s Colab Pro).
 2. **Runtime → Change runtime type → CPU**, ak sa dá, zapni *High-RAM* (viac jadier; notebook ich využije sám).
    GPU ani TPU netreba.
-3. V prvej bunke nastav `SESSION` – každá session iné číslo:
+3. Predvolene (`SESSION = [1, 2, 3, 4]`) beží všetko v jednom runtime jedna session po druhej,
+   spolu ~8 h pri 12 vCPU. Ak chceš session rozdeliť do viacerých runtime naraz, nastav v prvej
+   bunke v každom iné, napr. `SESSION = [1, 4]` a `SESSION = [2, 3]`:
 
    | `SESSION` | n | seedy | čo beží | odhad pri 12 vCPU |
    |---|---|---|---|---|
@@ -38,7 +40,7 @@ notebook sám klonuje `main` a ak tam ešte nie je `src/fetch_original.py`, pou�
    Kontroluje aj to, že program autorov so seedom 1 dá **presne hodnoty z článku**. Ak vypíše
    `NEZHODA` alebo chybu, nič ďalej nespúšťaj.
 6. Bunka 5 je hlavný beh. Nechaj kartu prehliadača otvorenú. Ak sa runtime odpojí, stačí znova
-   **Run all** s rovnakou `SESSION` – hotové behy sa preskočia.
+   **Run all** s rovnakým `SESSION` – hotové behy sa preskočia.
 7. Bunka 6 vypíše počty behov na seed (session 1: 1800, session 2 a 3: 360, session 4: 1080).
 
 ### Výstupy (Google Drive, priečinok `npfs-mo-povodne/`)
