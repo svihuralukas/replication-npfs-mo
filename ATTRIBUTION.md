@@ -20,8 +20,8 @@ a čo sme vytvorili alebo upravili my. Tento súbor priebežne dopĺňame.
     Jeho kód nie je súčasťou nášho riešenia ani skopírovaný.
   - **na doplnenie detailov, ktoré článok neuvádza** (štartovacie riešenie, ⌈0.8n⌉, pravidlo pre
     zhodu pri vkladaní, local search po pozíciách, limit + 1 iterácií; v 2. fáze poradie
-    kandidátov a prijatie celého kroku; výber medzery v NPS-set) – zoznam v `docs/PLAN.md`
-    a v hlavičkách `src/iga.py`, `src/nonperm.py`, `src/nps_set.py`. Implementácia je napísaná
+    kandidátov a prijatie celého kroku; výber medzery v NPS-set) – zoznam v hlavičkách
+    `src/iga.py`, `src/nonperm.py`, `src/nps_set.py`. Implementácia je napísaná
     nanovo v Pythone.
   - **MIP model** (`src/mip.py`) podľa Sekcie 3.3 článku, riešený solverom HiGHS (scipy) namiesto CPLEX-u.
   - **formát inštancií** podľa ich `instance.cpp` (aby ich program čítal naše inštancie).

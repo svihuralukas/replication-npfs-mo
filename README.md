@@ -31,8 +31,6 @@ Metóda autorov (IGA) má dve fázy:
 2. **Lokálne prehľadávanie v nepermutačnom priestore** – vkladanie *straight*, *s anticipáciou*
    a *s oneskorením*.
 
-Plán práce a metodológia: [docs/PLAN.md](docs/PLAN.md).
-
 ## Príprava prostredia
 
 Python 3.10–3.13.
@@ -134,7 +132,6 @@ analysis/           analýza výsledkov (porovnania, štatistiky, grafy)
 config/             parametre (generovanie inštancií, experimenty)
 data/paper_results/ výsledky autorov prepísané z článku (Tab. 3, 4, 6)
 data/authors/       výsledky článku po inštanciách (sťahuje src/fetch_original.py, nie je v gite)
-docs/PLAN.md        plán, metodológia
 instances/          inštancie: original/ (H&N, sťahuje src/fetch_original.py), generated/ (naše)
 reference/          spúšťanie programu autorov a jeho výsledky na našich inštanciách
 report/             záverečný report (LaTeX)
