@@ -29,6 +29,14 @@ Detaily, ktoré článok neuvádza a sú prevzaté z pôvodnej implementácie
   * Akceptácia: nové najlepšie riešenie sa vždy prijme; inak sa prijme, ak je
     lepšie než pred perturbáciou alebo s pravdepodobnosťou exp(-(ΣC' - ΣC)/T).
 
+Výber odstránených jobov pri perturbácii: článok hovorí o d náhodných jobov, preto predvolene
+(sampling="uniform") vyberáme d pozícií rovnomerne. Program autorov (random.hpp, sample_floyd)
+používa Floydov algoritmus s posunom o jedna: v kroku u losuje z {0, ..., u-1} namiesto
+{0, ..., u}, takže posledné pozície permutácie sa vyberajú zriedkavejšie (pri n = 100, d = 8
+asi 0,071 namiesto 0,080). Voľba sampling="autori" tento výber napodobňuje – slúži len na
+experiment, či tento detail vysvetľuje malý rozdiel medzi implementáciami (nevysvetľuje ho,
+results/original/analysis/summary.txt).
+
 Implementácia (naša): výpočtové jadro (vkladanie, local search) je zrýchlené cez numba.
 Náhodné rozhodnutia sa robia v Pythone cez numpy Generator so zadaným seedom,
 takže beh je plne reprodukovateľný. Generátor náhodných čísel je iný ako v C++
@@ -47,6 +55,10 @@ import numpy as np
 try:
     from numba import njit
 except ImportError:          # bez numby to funguje tiež, len oveľa pomalšie
+    import warnings
+    warnings.warn("numba nie je nainštalovaná – výpočet beží v čistom Pythone, asi 100× pomalšie "
+                  "(pip install -r requirements.txt)", stacklevel=2)
+
     def njit(*args, **kwargs):
         if args and callable(args[0]):
             return args[0]
@@ -185,6 +197,7 @@ class IGAParams:
     iter_factor: float = 0.1         # 0.1 → 15000/n iterácií ako v článku
     iter_base: float = 150000.0
     iter_limit: int | None = None    # ak je zadané, prepíše iter_factor
+    sampling: str = "uniform"        # výber odstránených jobov: "uniform" alebo "autori"
 
 
 @dataclass
@@ -246,11 +259,27 @@ def shift_local_search(p: np.ndarray, perm) -> tuple[np.ndarray, int, int, int]:
     return seq, int(ft), int(ms), int(steps)
 
 
-def perturb(p: np.ndarray, seq: np.ndarray, d: int, rng: np.random.Generator):
+def sample_positions_authors(n: int, d: int, rng: np.random.Generator) -> np.ndarray:
+    """d rôznych pozícií z {0, ..., n-1} rovnako ako sample_floyd v programe autorov
+    (losuje sa z {0, ..., u-1} namiesto {0, ..., u}, preto výber nie je rovnomerný)."""
+    chosen: set[int] = set()
+    for u in range(n - d, n):
+        s = int(rng.integers(u))
+        chosen.add(u if s in chosen else s)
+    return np.array(sorted(chosen), dtype=np.int64)
+
+
+def perturb(p: np.ndarray, seq: np.ndarray, d: int, rng: np.random.Generator,
+            sampling: str = "uniform"):
     """Deštrukcia a rekonštrukcia: odstráni d náhodných jobov a vloží ich späť
     v náhodnom poradí, každý na najlepšiu pozíciu. Vráti (nová permutácia, ΣC, Cmax)."""
     n = seq.shape[0]
-    positions = rng.choice(n, size=d, replace=False)
+    if sampling == "autori":
+        positions = sample_positions_authors(n, d, rng)
+    elif sampling == "uniform":
+        positions = rng.choice(n, size=d, replace=False)
+    else:
+        raise ValueError(f"neznámy sampling {sampling!r}")
     removed = rng.permutation(seq[positions])
     mask = np.ones(n, dtype=bool)
     mask[positions] = False
@@ -282,7 +311,7 @@ def iga(p: np.ndarray, seed: int, params: IGAParams | None = None) -> IGAResult:
 
     steps = 0
     while steps <= limit:                     # ako autori: stop až keď steps > limit
-        new_seq, new_ft, _ = perturb(p, seq, d, rng)
+        new_seq, new_ft, _ = perturb(p, seq, d, rng, params.sampling)
         new_ft, new_ms, _ = _shift_local_search(p, new_seq, new_ft)
         new_ft, new_ms = int(new_ft), int(new_ms)
         if new_ft < best_ft:                  # nové najlepšie – vždy prijmi

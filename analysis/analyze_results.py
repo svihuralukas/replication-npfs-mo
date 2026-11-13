@@ -1,6 +1,6 @@
 """
-Analýza plných experimentov 2. etapy: naša implementácia vs. pôvodný program autorov
-na rovnakých inštanciách a porovnanie s tabuľkami článku (Tab. 3, 4, 6).
+Analýza predbežného experimentu na VLASTNÝCH inštanciách: naša implementácia vs. pôvodný program
+autorov na rovnakých inštanciách a porovnanie s tabuľkami článku (Tab. 3, 4, 6).
 
 Vstupy:
     results/iga_ours.csv (+ _history.csv)   – src/run_experiments.py
@@ -9,8 +9,9 @@ Vstupy:
 Výstupy:
     results/analysis/*.csv                  – tabuľky (rovnaké rozloženie ako v článku) a súhrny
     results/analysis/summary.txt            – textový súhrn so štatistickými testami
-    report/figures/*.pdf                    – grafy pre report
-    report/tables/*.tex                     – tabuľky pre report
+    results/analysis/figures/*.pdf          – grafy
+    results/analysis/tables/*.tex           – tabuľky (LaTeX)
+    report/tables/rpd_by_n.tex              – súhrnná tabuľka, ktorú používa report (príloha)
 
 Metodika (ako v článku, Sekcia 5.1):
   * BKV inštancie = najmenšie ΣC zo VŠETKÝCH našich experimentov (obe implementácie, všetky
@@ -318,8 +319,8 @@ def main() -> None:
     args = ap.parse_args()
 
     outdir = Path(args.outdir)
-    figdir, texdir = ROOT / "report" / "figures", ROOT / "report" / "tables"
-    for d in (outdir, figdir, texdir):
+    figdir, texdir = outdir / "figures", outdir / "tables"
+    for d in (outdir, figdir, texdir, ROOT / "report" / "tables"):
         d.mkdir(parents=True, exist_ok=True)
 
     mip = pd.read_csv(args.mip) if Path(args.mip).exists() else None
@@ -367,6 +368,7 @@ def main() -> None:
         say()
 
     compact_table(texdir / "rpd_by_n.tex", by_n)
+    compact_table(ROOT / "report" / "tables" / "rpd_by_n.tex", by_n)
 
     # ---------------- MIP (n = 5): odchýlka od optima je priamo porovnateľná s článkom,
     # lebo autori vyriešili všetky inštancie s n = 5 optimálne (Tab. 5, BKV = optimum)

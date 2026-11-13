@@ -1,0 +1,20 @@
+\begin{table}[ht]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\caption{Pôvodné inštancie: priemerný čas behu IGA v sekundách (obe fázy). Naše behy: Google Colab (Xeon 2,2\,GHz, 12 vCPU, 12 paralelných behov), seedy 6, 7, 8, 9, 10; článok: Core i7-13700, seed 1.}
+\label{tab:orig_time}
+\begin{tabular}{l|rrrrrr|rrrrrr|rrrrrr}
+\toprule
+ & \multicolumn{6}{c}{naša (Python)} & \multicolumn{6}{c}{autori (C++)} & \multicolumn{6}{c}{článok} \\
+$m$ & 5 & 10 & 20 & 30 & 50 & 100 & 5 & 10 & 20 & 30 & 50 & 100 & 5 & 10 & 20 & 30 & 50 & 100 \\
+\midrule
+5 & 0.20 & 0.18 & 0.33 & 0.60 & 1.47 & 6.33 & 0.03 & 0.11 & 0.35 & 0.68 & 1.78 & 8.06 & 0.01 & 0.04 & 0.11 & 0.20 & 0.56 & 3.35 \\
+10 & 0.21 & 0.23 & 0.49 & 0.91 & 2.33 & 10.46 & 0.05 & 0.17 & 0.50 & 1.01 & 2.83 & 14.01 & 0.02 & 0.05 & 0.16 & 0.33 & 1.10 & 7.00 \\
+20 & 0.22 & 0.35 & 0.87 & 1.72 & 4.68 & 23.19 & 0.07 & 0.27 & 0.88 & 1.85 & 5.51 & 30.39 & 0.02 & 0.08 & 0.27 & 0.62 & 2.26 & 15.38 \\
+30 & 0.25 & 0.43 & 1.23 & 2.56 & 7.68 & 42.83 & 0.10 & 0.37 & 1.30 & 2.92 & 9.08 & 60.16 & 0.03 & 0.11 & 0.41 & 1.01 & 3.72 & 26.86 \\
+\midrule
+priemer & 0.22 & 0.30 & 0.73 & 1.45 & 4.04 & 20.70 & 0.06 & 0.23 & 0.76 & 1.62 & 4.80 & 28.16 & 0.02 & 0.07 & 0.24 & 0.54 & 1.91 & 13.15 \\
+\bottomrule
+\end{tabular}
+\end{table}

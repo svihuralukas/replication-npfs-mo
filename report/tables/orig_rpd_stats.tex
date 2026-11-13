@@ -1,0 +1,19 @@
+\begin{table}[ht]
+\centering
+\scriptsize\setlength{\tabcolsep}{3pt}
+\caption{Pôvodné inštancie, IGA: štatistiky relatívnej odchýlky od BKV v \% cez všetky behy (inštancie $\times$ seedy 1--10); záporné minimum znamená beh lepší než BKV článku. Stabilita: priemerná smerodajná odchýlka rpd jednej inštancie cez seedy a rozsah priemeru cez 360 inštancií pri jednotlivých seedoch (naša implementácia).}
+\label{tab:orig_rpd_stats}
+\begin{tabular}{r|rrrrr|rrrrr|rr}
+\toprule
+ & \multicolumn{5}{c|}{naša (Python)} & \multicolumn{5}{c|}{autori (C++)} & \multicolumn{2}{c}{stabilita (naša)} \\
+$n$ & priemer & medián & sm.\,odch. & min & max & priemer & medián & sm.\,odch. & min & max & sm.\,odch. & priemer seedu \\
+\midrule
+5 & 1.27 & 0.45 & 1.80 & 0.00 & 12.40 & 1.27 & 0.45 & 1.80 & 0.00 & 12.40 & 0.00 & 1.27--1.27 \\
+10 & 2.10 & 1.52 & 2.03 & 0.00 & 9.70 & 2.10 & 1.52 & 2.03 & 0.00 & 9.70 & 0.00 & 2.10--2.10 \\
+20 & 1.07 & 0.75 & 1.16 & -1.93 & 5.98 & 1.07 & 0.74 & 1.16 & -1.16 & 5.66 & 0.14 & 1.05--1.08 \\
+30 & 0.66 & 0.41 & 0.94 & -1.89 & 6.51 & 0.65 & 0.40 & 0.93 & -1.80 & 6.19 & 0.46 & 0.63--0.68 \\
+50 & 0.41 & 0.38 & 0.73 & -2.35 & 3.75 & 0.39 & 0.36 & 0.70 & -2.35 & 3.84 & 0.50 & 0.38--0.45 \\
+100 & 0.75 & 0.73 & 0.73 & -1.70 & 4.31 & 0.74 & 0.71 & 0.70 & -1.56 & 4.10 & 0.50 & 0.69--0.78 \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,2 @@
+2026-11-11T00:58:09.278643 start s4-5 cpu='Intel(R) Xeon(R) CPU @ 2.20GHz' cores=12 python=3.13.16
+2026-11-11T01:46:59.559900 done s4-5

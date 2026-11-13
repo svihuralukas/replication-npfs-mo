@@ -1,18 +1,33 @@
 # Referenčné behy pôvodného programu autorov
 
-Pôvodný C++ program autorov (`npfsmo`, https://github.com/mrpritt/npfs-mo) spúšťame na
-**našich** inštanciách. Slúži na overenie našej implementácie (presná zhoda deterministických
-častí, štatistická zhoda náhodných) a ako referenčný výsledok, ktorý by dal článok na týchto dátach.
+Pôvodný C++ program autorov (`npfsmo`, https://github.com/mrpritt/npfs-mo) spúšťame na tých
+istých inštanciách a s tými istými seedmi ako našu implementáciu. Slúži na overenie našej
+implementácie (presná zhoda deterministických častí, štatistická zhoda náhodných). Na pôvodných
+inštanciách so seedom 1 dáva presne hodnoty z článku. Tento priečinok obsahuje behy na vlastných
+inštanciách (predbežný experiment); behy na pôvodných inštanciách sú v `results/original/`.
 
 | Súbor | Obsah | Vytvoril |
 |---|---|---|
-| `iga0_check_authors.csv` | 1. etapa: 120 inštancií × seedy 1–5, len IGA0 sa porovnávalo | `run_authors.py` |
-| `iga_authors.csv` | plné experimenty 2. etapy (IGA0, IGA+NPS-set, IGA), všetky inštancie | `run_authors.py` |
+| `iga0_check_authors.csv` | prvá kontrola: 120 inštancií × seedy 1–5, porovnávalo sa len IGA0 | `run_authors.py` |
+| `iga_authors.csv` | predbežný experiment (IGA0, IGA+NPS-set, IGA), všetky vlastné inštancie | `run_authors.py` |
 | `authors_phase2_check.json` | permutácia z 1. fázy, finálny rozvrh 2. fázy a NPS-set pre 72 inštancií (`*_15`, jedna z každej skupiny), seed 1 | `make_eval_fixture.py --glob "*_15.txt"` |
 
 Stĺpce CSV sú opísané v hlavičke `run_authors.py`; sú rovnaké ako v `results/iga_ours.csv`.
 
+## Načo je Docker
+
+Program autorov je C++ pre Linux (Boost, CMake). Na Windows bez WSL distribúcie ho kompilujeme
+a spúšťame v Dockeri. Na hlavný experiment Docker netreba – Colab notebook ho kompiluje priamo
+(`colab/README.md`) – a v Linuxe/WSL stačí postup z hlavného `README.md`. Overené
+13. 11. 2026 (Docker 29.9.3): obraz sa zostaví od nuly, program dá na Obr. 3 optimum 1191
+a behy na pôvodných inštanciách sú bit po bite rovnaké ako v Colabe.
+
 ## Spustenie cez Docker (Windows bez WSL distribúcie, Linux, macOS)
+
+Príkazy sa spúšťajú z koreňa repozitára. **V Git Bash na Windows** treba pred každý
+`docker run` dať `MSYS_NO_PATHCONV=1` (ako nižšie), inak Git Bash prepíše cesty v kontajneri
+(`/npfs-mo` → `C:/Program Files/Git/npfs-mo`) a príkaz zlyhá s
+`cd: /npfs-mo: No such file or directory`. V Linuxe, macOS a PowerShelli sa prefix vynechá.
 
 ```bash
 # obraz s kompilátorom a Boostom
@@ -24,14 +39,23 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 EOF
 
 # kód autorov vedľa tohto repozitára a kompilácia
-git clone https://github.com/mrpritt/npfs-mo ../npfs-mo && (cd ../npfs-mo && git submodule update --init)
-docker run --rm -v "$(pwd)/../npfs-mo:/npfs-mo" npfsmo-build bash -c \
+git clone https://github.com/mrpritt/npfs-mo ../npfs-mo && (cd ../npfs-mo && git checkout bde1bc3 && git submodule update --init)
+MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd)/../npfs-mo:/npfs-mo" npfsmo-build bash -c \
     "cd /npfs-mo && cmake -DCMAKE_BUILD_TYPE=Release -DBOOST_ROOT=/usr -S src -B build && cmake --build build -j4"
 
-# behy (z koreňa repozitára); v Git Bash na Windows treba pred príkaz dať MSYS_NO_PATHCONV=1
-docker run --rm -v "$(pwd)/../npfs-mo:/npfs-mo" -v "$(pwd):/proj" -w /proj npfsmo-build \
+# behy na vlastných inštanciách (predbežný experiment)
+MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd)/../npfs-mo:/npfs-mo" -v "$(pwd):/proj" -w /proj npfsmo-build \
     python3 reference/run_authors.py --npfsmo /npfs-mo/build/npfsmo \
     --instances "instances/generated/*.txt" --seeds 1 2 3 --out reference/iga_authors.csv
+
+# pôvodné inštancie (najprv python src/fetch_original.py): seed 1 musí dať hodnoty z článku
+# (data/authors/table3-iga.csv); výstup mimo results/original/, aby sa nemiešal s výsledkami z Colabu
+MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd)/../npfs-mo:/npfs-mo" -v "$(pwd):/proj" -w /proj npfsmo-build \
+    python3 reference/run_authors.py --npfsmo /npfs-mo/build/npfsmo \
+    --instances "instances/original/*.txt" --seeds 1 --out results/original_local/iga_authors_seed1.csv
 ```
+
+Ak `docker build` zlyhá na stiahnutí `ubuntu:24.04` (nedostupný Docker Hub), program sa dá
+skompilovať rovnakými príkazmi priamo v Ubuntu 24.04 alebo vo WSL, prípadne v Colabe.
 
 V WSL/Linuxe s nainštalovanými balíkmi stačí postup z hlavného `README.md`.

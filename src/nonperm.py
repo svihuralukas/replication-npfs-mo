@@ -50,6 +50,10 @@ import numpy as np
 try:
     from numba import njit
 except ImportError:          # bez numby to funguje tiež, len oveľa pomalšie
+    import warnings
+    warnings.warn("numba nie je nainštalovaná – výpočet beží v čistom Pythone, asi 100× pomalšie "
+                  "(pip install -r requirements.txt)", stacklevel=2)
+
     def njit(*args, **kwargs):
         if args and callable(args[0]):
             return args[0]

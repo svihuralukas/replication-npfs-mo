@@ -1,75 +1,64 @@
-# Doplnenie seedov 4–10 pre n = 100 v Google Colabe
+# Behy v Google Colabe
 
-Na notebooku máme pre n = 100 len seedy 1–3 (jeden beh n = 100, m = 30 trvá asi minútu,
-7 ďalších seedov pre obe implementácie by trvalo ~10 h). Notebook
-[`n100_seedy.ipynb`](n100_seedy.ipynb) dobehne zvyšné seedy v Colabe – našu implementáciu
-aj pôvodný C++ program autorov – a výsledky ukladá na Google Drive.
+| Notebook | Inštancie | Čo počíta | Výsledky |
+|---|---|---|---|
+| [`povodne_instancie.ipynb`](povodne_instancie.ipynb) | pôvodné H&N (od autorov) | **hlavný experiment**: naša implementácia aj program autorov, všetky n, seedy 1–10 | [`results/original/`](../results/original/) |
+| [`n100_seedy.ipynb`](n100_seedy.ipynb) | vlastné vygenerované | predbežný experiment: seedy 4–10 pre n = 100 | [`results/colab/`](../results/colab/) |
 
-**Otvoriť v Colabe:**
-https://colab.research.google.com/github/svihuralukas/replication-npfs-mo/blob/main/colab/n100_seedy.ipynb
-(kým nie je PR #1 zlúčený do `main`, použi
-https://colab.research.google.com/github/svihuralukas/replication-npfs-mo/blob/etapa-2-faza2-npsset/colab/n100_seedy.ipynb;
-notebook sám klonuje `main` a ak tam 2. etapa ešte nie je, použije vetvu PR)
+Oba notebooky si samy naklonujú tento repozitár, nainštalujú balíky, skompilujú pôvodný program
+autorov (commit `bde1bc3`) a pred hlavným behom overia, že prostredie dáva presne rovnaké výsledky
+ako referenčné behy. Výsledky sa zapisujú priebežne na Google Drive; po odpojení runtime stačí
+znova **Run all**, hotové behy sa preskočia.
 
-## Postup
+## Hlavný experiment – `povodne_instancie.ipynb`
 
-1. Otvor odkaz vyššie (prihlásený do Google účtu s Colab Pro).
-2. **Runtime → Change runtime type → CPU** (GPU ani TPU netreba – kód beží len na procesore;
-   ak je k dispozícii *High-RAM*, zapni ho – zvyčajne dá viac jadier a notebook ich využije sám).
-3. V prvej bunke nastav `SEEDS` – **každá session iné seedy**, napr.:
+https://colab.research.google.com/github/svihuralukas/replication-npfs-mo/blob/main/colab/povodne_instancie.ipynb
 
-   | session | `SEEDS` |
-   |---|---|
-   | 1 | `[4, 5]` |
-   | 2 | `[6, 7]` |
-   | 3 | `[8, 9]` |
-   | 4 | `[10]` |
+1. **Runtime → Change runtime type → CPU** (GPU ani TPU netreba). Notebook využije všetky vCPU
+   runtime, s *High-RAM* ich býva viac.
+2. **Runtime → Run all** a povoliť prístup ku Google Drive.
+3. Bunka 4 (**Kontrola prostredia**, ~3 min) musí vypísať `Prostredie je v poriadku.` Overuje
+   testy, to, že program autorov so seedom 1 dá **presne hodnoty z článku**, a to, že naša
+   implementácia dá rovnaké výsledky ako na našom počítači.
+4. Bunka 5 je hlavný beh, bunka 6 vypíše počty hotových behov na seed.
 
-   Koľko session naraz Colab Pro dovolí, závisí od aktuálnych limitov účtu – ak len jednu,
-   daj do nej viac seedov (napr. `[4, 5, 6, 7]`) a zvyšok spusti ďalšiu noc.
-4. **Runtime → Run all.** Na začiatku vyskočí okno na povolenie prístupu k Google Drive – potvrď.
-5. Počkaj, kým prebehne bunka 4 (**Kontrola prostredia**, ~3 min). Musí vypísať
-   `Prostredie je v poriadku.` Ak vypíše `NEZHODA` alebo chybu, nič ďalej nespúšťaj a pošli mi výstup.
-6. Bunka 5 je hlavný beh. Nechaj **kartu prehliadača otvorenú a počítač zapnutý** (Colab Pro
-   pri zatvorenej karte runtime po čase odpojí). Ak sa runtime odpojí, stačí znova **Run all**
-   s rovnakými `SEEDS` – hotové behy sa preskočia.
+Experiment je rozdelený na štyri časti (`SESSION` v prvej bunke; predvolene všetky jedna po druhej):
 
-## Odhad času
+| časť | n | seedy | čo beží | trvanie pri 12 vCPU |
+|---|---|---|---|---|
+| 1 | 5–50 | 1–10 | naša implementácia + program autorov | ~0,6 h |
+| 2 | 100 | 1–5 | naša implementácia + program autorov | ~2 h |
+| 3 | 100 | 6–10 | naša implementácia + program autorov | ~2 h |
+| 4 | 30–100 | 1–10 | naša implementácia s výberom jobov ako v programe autorov (`--sampling autori`) | ~2,2 h |
 
-Na štandardnom CPU runtime (2 vCPU) približne **3 h na jeden seed** (naša implementácia ~1,5 h
-+ program autorov ~1,5 h; namerané v simulácii Colabu – Ubuntu 22.04, 2 CPU). Session so
-`SEEDS = [4, 5]` teda ~6 h, čo sa zmestí do noci. S High-RAM (viac jadier) úmerne rýchlejšie.
-Prípravné bunky 1–4 trvajú spolu ~5 min. Priebeh vidno vo výstupe bunky 5 (`k/360 hotových`).
-
-## Výstupy (na Google Drive, priečinok `npfs-mo-colab/`)
+Časti sa dajú pustiť aj vo viacerých runtime naraz (napr. `SESSION = [1, 4]` a `SESSION = [2, 3]`).
+Výstupy na Drive (priečinok `npfs-mo-povodne/`) sa skopírujú do `results/original/`:
 
 | súbor | obsah |
 |---|---|
-| `iga_ours_colab_s4-5.csv` | naša implementácia, 360 riadkov na seed (rovnaké stĺpce ako `results/iga_ours.csv`) |
-| `iga_ours_colab_s4-5_history.csv` | konvergencia 1. fázy |
-| `iga_authors_colab_s4-5.csv` | program autorov (rovnaké stĺpce ako `reference/iga_authors.csv`) |
-| `info_s4-5.txt` | čas začiatku/konca, model CPU, počet jadier |
+| `iga_ours_session<k>.csv` (+ `_history.csv`) | naša implementácia (stĺpce ako `results/iga_ours.csv`), priebeh 1. fázy |
+| `iga_authors_session<k>.csv` | program autorov (stĺpce ako `reference/iga_authors.csv`) |
+| `iga_ours-sampling-autori_session4.csv` | naša implementácia s výberom jobov ako autori |
+| `info_session<k>.txt` | čas začiatku a konca, CPU, počet vCPU |
 
-Bunka 6 vypíše, koľko riadkov je hotových pre každý seed (cieľ: 360 v oboch súboroch).
-
-## Ráno
-
-Stiahni celý priečinok `npfs-mo-colab` z Drive a skopíruj súbory do **`results/colab/`**
-v repozitári. Potom:
+Potom:
 
 ```bash
-python analysis/analyze_results.py      # automaticky pridá results/colab/*_colab_*.csv
+python src/fetch_original.py          # pôvodné inštancie a výsledky článku po inštanciách
+python analysis/analyze_original.py   # results/original/analysis/, report/tables/orig_*.tex, report/figures/orig_*.pdf
 ```
 
-Behy z Colabu sa započítajú do kvality riešení (BKV, rpd, testy). **Časy** (Tab. 4, graf časov)
-ostávajú len z notebooku, aby sa nemiešal rôzny hardvér.
+**Náš beh (12. – 13. 11. 2026):** Intel Xeon 2,2 GHz. Časť 1 začala na runtime s 2 vCPU,
+po jeho odpojení pokračovala na runtime s 12 vCPU (seedy 1–5 dobehli na 2 vCPU, seedy 6–10
+na 12 vCPU); časti 2–4 bežali celé na 12 vCPU (`results/original/info_session*.txt`). Kvalitu
+riešení to neovplyvní (rozpočet je počet iterácií), časy v reporte sú preto len zo seedov 6–10,
+ktoré bežali všetky na rovnakom type runtime.
 
-## Prečo sa dá výsledkom z Colabu veriť
+## Predbežný experiment – `n100_seedy.ipynb`
 
-- Rozpočet algoritmu je daný počtom iterácií, nie časom – iný procesor mení len čas behu.
-- Bunka 4 pred hlavným behom overí, že naša implementácia aj program autorov dajú v Colabe
-  **presne rovnaké** ΣC ako na notebooku (seed 2, dve inštancie) a že prechádzajú testy 2. fázy
-  a NPS-set.
-- Program autorov sa kompiluje z rovnakého commitu (`bde1bc3`). Colab má Boost 1.74 a ich CMake
-  chce ≥ 1.75, preto ho kompilujeme priamo cez `g++`; overené v Ubuntu 22.04 – výsledky sú bit
-  po bite rovnaké ako z buildu cez CMake.
+Na vlastných vygenerovaných inštanciách (`instances/generated/`) bežali na notebooku seedy
+1–10 pre n ≤ 50 a 1–3 pre n = 100. Seedy 4–10 pre n = 100 dobehli týmto notebookom v Colabe
+(11. 11. 2026, 4 runtime po 12 vCPU, Xeon 2,2 GHz; `SEEDS` v prvej bunke: `[4, 5]`, `[6, 7]`,
+`[8, 9]`, `[10]`). Výsledky sú v [`results/colab/`](../results/colab/) a
+`analysis/analyze_results.py` ich načíta automaticky; do kvality riešení sa započítavajú,
+časy v tomto experimente sú len z notebooku.

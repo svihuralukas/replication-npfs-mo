@@ -24,3 +24,10 @@ report/main.pdf
 Thumbs.db
 .vscode/
 .idea/
+
+# Pôvodné inštancie a výsledky autorov – sťahuje src/fetch_original.py (patria autorom)
+instances/original/
+data/authors/
+
+# Lokálne zopakovanie hlavného experimentu (README.md), výsledky z Colabu sú v results/original/
+results/original_local/
