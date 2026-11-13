@@ -115,7 +115,7 @@ def fmt_p(p: float) -> str:
 
 
 def fmt_ci(r: dict) -> str:
-    f = lambda x: f"{x:.3f}".replace(".", "{,}").replace("-", "$-$")   # noqa: E731
+    f = lambda x: f"{x + 0.0:.3f}".replace("-0.000", "0.000").replace(".", "{,}").replace("-", "$-$")  # noqa: E731
     return f"{f(r['mean'])} [{f(r['lo'])}; {f(r['hi'])}]"
 
 
@@ -207,6 +207,8 @@ def main() -> None:
     ap.add_argument("--outdir", default=None, help="predvolene <results>/analysis")
     ap.add_argument("--texdir", default=str(ROOT / "report" / "tables"))
     ap.add_argument("--figdir", default=str(ROOT / "report" / "figures"))
+    ap.add_argument("--time-seeds", nargs="+", type=int, default=[6, 7, 8, 9, 10],
+                    help="seedy, z ktorých sa počítajú časy (všetky bežali na rovnakom type runtime)")
     args = ap.parse_args()
 
     res = Path(args.results)
@@ -385,20 +387,21 @@ def main() -> None:
         cells = [str(n)]
         for impl in IMPLS:
             x = s[(s.impl == impl) & (s.variant == "IGA") & (s.n == n)].iloc[0]
-            cells += [f"{x['mean']:.2f}", f"{x['median']:.2f}", f"{x['std']:.2f}", f"{x['max']:.2f}"]
+            cells += [f"{x['mean']:.2f}", f"{x['median']:.2f}", f"{x['std']:.2f}", f"{x['min']:.2f}",
+                      f"{x['max']:.2f}"]
         stab = st[(st.impl == "ours") & (st.n == n)].iloc[0]
         cells += [f"{stab.std_over_seeds:.2f}", f"{stab.n_seed_mean_min:.2f}--{stab.n_seed_mean_max:.2f}"]
         rows.append(cells)
     tex_table(texdir / "orig_rpd_stats.tex",
               caption=r"Pôvodné inštancie, IGA: štatistiky relatívnej odchýlky od BKV v \% cez všetky behy "
-                      r"(inštancie $\times$ seedy 1--10). Stabilita: priemerná smerodajná odchýlka rpd jednej "
-                      r"inštancie cez seedy a rozsah priemeru cez 360 inštancií pri jednotlivých seedoch "
-                      r"(naša implementácia).",
-              label="tab:orig_rpd_stats", colspec="r|rrrr|rrrr|rr", size=r"\scriptsize",
-              header=[r" & \multicolumn{4}{c|}{naša (Python)} & \multicolumn{4}{c|}{autori (C++)} & "
+                      r"(inštancie $\times$ seedy 1--10); záporné minimum znamená beh lepší než BKV článku. "
+                      r"Stabilita: priemerná smerodajná odchýlka rpd jednej inštancie cez seedy a rozsah "
+                      r"priemeru cez 360 inštancií pri jednotlivých seedoch (naša implementácia).",
+              label="tab:orig_rpd_stats", colspec="r|rrrrr|rrrrr|rr", size=r"\scriptsize",
+              header=[r" & \multicolumn{5}{c|}{naša (Python)} & \multicolumn{5}{c|}{autori (C++)} & "
                       r"\multicolumn{2}{c}{stabilita (naša)}",
-                      r"$n$ & priemer & medián & sm.\,odch. & max & priemer & medián & sm.\,odch. & max & "
-                      r"sm.\,odch. & priemer seedu"], rows=rows)
+                      r"$n$ & priemer & medián & sm.\,odch. & min & max & priemer & medián & sm.\,odch. & min & "
+                      r"max & sm.\,odch. & priemer seedu"], rows=rows)
     say("Štatistiky rpd IGA po n (priemer, medián, sm. odch., min, max):")
     for impl in IMPLS:
         say(f"  {IMPLS[impl]}")
@@ -413,26 +416,30 @@ def main() -> None:
             for n in x.index))
     say()
 
-    # ---------------- časy (Tab. 4 a Obr. 4 článku)
-    t_o = group_table(df[df.impl == "ours"], "time", index=("m",))
-    t_a = group_table(df[df.impl == "authors"], "time", index=("m",))
+    # ---------------- časy (Tab. 4 a Obr. 4 článku) – len zo seedov, ktoré bežali na rovnakom
+    # type runtime (results/original/info_session*.txt: seedy 1–5 pre n <= 50 bežali na 2 vCPU)
+    dt = df[df.seed.isin(args.time_seeds)]
+    say(f"Časy zo seedov {args.time_seeds} ({len(dt) // 2} behov na implementáciu)")
+    t_o = group_table(dt[dt.impl == "ours"], "time", index=("m",))
+    t_a = group_table(dt[dt.impl == "authors"], "time", index=("m",))
     t_p = group_table(paper.reset_index(), "time", index=("m",))
     latex_table(texdir / "orig_time.tex", {IMPLS["ours"]: t_o, IMPLS["authors"]: t_a, "článok": t_p},
                 caption="Pôvodné inštancie: priemerný čas behu IGA v sekundách (obe fázy). Naše behy: "
-                        "Google Colab, toľko paralelných procesov, koľko má runtime vCPU; článok: Core i7-13700.",
+                        "Google Colab (Xeon 2,2\\,GHz, 12 vCPU, 12 paralelných behov), seedy "
+                        + ", ".join(map(str, args.time_seeds)) + "; článok: Core i7-13700, seed 1.",
                 label="tab:orig_time", index_names=("$m$",), fmt="{:.2f}")
     say("Priemerný čas IGA [s] po n (naša | autori | článok) a pomer naša/článok:")
     for n in NS:
         o, a, p_ = t_o[f"n{n}"].mean(), t_a[f"n{n}"].mean(), t_p[f"n{n}"].mean()
         say(f"  n = {n:3d}: {o:7.2f} | {a:7.2f} | {p_:7.2f}   ({o / p_:.1f}×, autori {a / p_:.1f}×)")
-    ours_t = df[df.impl == "ours"]
+    ours_t = dt[dt.impl == "ours"]
     share2 = (ours_t.time_phase2 / ours_t.time).groupby(ours_t.n).mean()
     say("  podiel 2. fázy na našom čase: " + ", ".join(f"n={n}: {share2[n]:.0%}" for n in share2.index))
     say()
 
     # ---------------- grafy
     fig_rpd_by_n(df, pp, figdir / "orig_rpd_by_n.pdf")
-    fig_time_vs_paper(df, paper, figdir / "orig_time_scatter.pdf")
+    fig_time_vs_paper(dt, paper, figdir / "orig_time_scatter.pdf")
     fig_seed_box(df, figdir / "orig_seed_box.pdf")
     if hist_files:
         hist = pd.concat([pd.read_csv(p) for p in hist_files], ignore_index=True)

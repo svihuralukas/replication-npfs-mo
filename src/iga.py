@@ -34,7 +34,8 @@ Výber odstránených jobov pri perturbácii: článok hovorí o d náhodných j
 používa Floydov algoritmus s posunom o jedna: v kroku u losuje z {0, ..., u-1} namiesto
 {0, ..., u}, takže posledné pozície permutácie sa vyberajú zriedkavejšie (pri n = 100, d = 8
 asi 0,071 namiesto 0,080). Voľba sampling="autori" tento výber napodobňuje – slúži len na
-experiment, či tento detail vysvetľuje malý rozdiel medzi implementáciami.
+experiment, či tento detail vysvetľuje malý rozdiel medzi implementáciami (nevysvetľuje ho,
+results/original/analysis/summary.txt).
 
 Implementácia (naša): výpočtové jadro (vkladanie, local search) je zrýchlené cez numba.
 Náhodné rozhodnutia sa robia v Pythone cez numpy Generator so zadaným seedom,

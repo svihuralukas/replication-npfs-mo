@@ -1,13 +1,15 @@
 # Referenčné behy pôvodného programu autorov
 
-Pôvodný C++ program autorov (`npfsmo`, https://github.com/mrpritt/npfs-mo) spúšťame na
-**našich** inštanciách. Slúži na overenie našej implementácie (presná zhoda deterministických
-častí, štatistická zhoda náhodných) a ako referenčný výsledok, ktorý by dal článok na týchto dátach.
+Pôvodný C++ program autorov (`npfsmo`, https://github.com/mrpritt/npfs-mo) spúšťame na tých
+istých inštanciách a s tými istými seedmi ako našu implementáciu. Slúži na overenie našej
+implementácie (presná zhoda deterministických častí, štatistická zhoda náhodných). Na pôvodných
+inštanciách so seedom 1 dáva presne hodnoty z článku. Tento priečinok obsahuje behy na vlastných
+inštanciách (predbežný experiment); behy na pôvodných inštanciách sú v `results/original/`.
 
 | Súbor | Obsah | Vytvoril |
 |---|---|---|
-| `iga0_check_authors.csv` | 1. etapa: 120 inštancií × seedy 1–5, len IGA0 sa porovnávalo | `run_authors.py` |
-| `iga_authors.csv` | plné experimenty 2. etapy (IGA0, IGA+NPS-set, IGA), všetky inštancie | `run_authors.py` |
+| `iga0_check_authors.csv` | prvá kontrola: 120 inštancií × seedy 1–5, porovnávalo sa len IGA0 | `run_authors.py` |
+| `iga_authors.csv` | predbežný experiment (IGA0, IGA+NPS-set, IGA), všetky vlastné inštancie | `run_authors.py` |
 | `authors_phase2_check.json` | permutácia z 1. fázy, finálny rozvrh 2. fázy a NPS-set pre 72 inštancií (`*_15`, jedna z každej skupiny), seed 1 | `make_eval_fixture.py --glob "*_15.txt"` |
 
 Stĺpce CSV sú opísané v hlavičke `run_authors.py`; sú rovnaké ako v `results/iga_ours.csv`.

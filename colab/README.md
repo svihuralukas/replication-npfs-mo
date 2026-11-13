@@ -1,75 +1,64 @@
 # Behy v Google Colabe
 
-| Notebook | Inštancie | Čo počíta | Stav |
+| Notebook | Inštancie | Čo počíta | Výsledky |
 |---|---|---|---|
-| [`povodne_instancie.ipynb`](povodne_instancie.ipynb) | **pôvodné** H&N (zverejnené autormi 11. 11. 2026) | **hlavný experiment**: naša implementácia aj program autorov, všetky n, seedy 1–10 | treba spustiť |
-| [`n100_seedy.ipynb`](n100_seedy.ipynb) | naše vygenerované | doplnenie seedov 4–10 pre n = 100 (predbežný experiment) | hotové, výsledky v `results/colab/` |
+| [`povodne_instancie.ipynb`](povodne_instancie.ipynb) | pôvodné H&N (od autorov) | **hlavný experiment**: naša implementácia aj program autorov, všetky n, seedy 1–10 | [`results/original/`](../results/original/) |
+| [`n100_seedy.ipynb`](n100_seedy.ipynb) | vlastné vygenerované | predbežný experiment: seedy 4–10 pre n = 100 | [`results/colab/`](../results/colab/) |
 
-Oba notebooky si samy naklonujú tento repozitár (vetva `main`), nainštalujú balíky, skompilujú
-pôvodný program autorov (commit `bde1bc3`) a pred hlavným behom overia, že prostredie dáva
-presne rovnaké výsledky ako náš notebook. Výsledky sa zapisujú priebežne na Google Drive.
+Oba notebooky si samy naklonujú tento repozitár, nainštalujú balíky, skompilujú pôvodný program
+autorov (commit `bde1bc3`) a pred hlavným behom overia, že prostredie dáva presne rovnaké výsledky
+ako referenčné behy. Výsledky sa zapisujú priebežne na Google Drive; po odpojení runtime stačí
+znova **Run all**, hotové behy sa preskočia.
 
 ## Hlavný experiment – `povodne_instancie.ipynb`
 
-**Otvoriť v Colabe:**
 https://colab.research.google.com/github/svihuralukas/replication-npfs-mo/blob/main/colab/povodne_instancie.ipynb
-(kým nie je PR s pôvodnými inštanciami zlúčený do `main`, použi
-https://colab.research.google.com/github/svihuralukas/replication-npfs-mo/blob/etapa-3-povodne-instancie/colab/povodne_instancie.ipynb;
-notebook sám klonuje `main` a ak tam ešte nie je `src/fetch_original.py`, použije vetvu PR)
 
-1. Otvor odkaz (prihlásený do Google účtu s Colab Pro).
-2. **Runtime → Change runtime type → CPU**, ak sa dá, zapni *High-RAM* (viac jadier; notebook ich využije sám).
-   GPU ani TPU netreba.
-3. Predvolene (`SESSION = [1, 2, 3, 4]`) beží všetko v jednom runtime jedna session po druhej,
-   spolu ~8 h pri 12 vCPU. Ak chceš session rozdeliť do viacerých runtime naraz, nastav v prvej
-   bunke v každom iné, napr. `SESSION = [1, 4]` a `SESSION = [2, 3]`:
+1. **Runtime → Change runtime type → CPU** (GPU ani TPU netreba). Notebook využije všetky vCPU
+   runtime, s *High-RAM* ich býva viac.
+2. **Runtime → Run all** a povoliť prístup ku Google Drive.
+3. Bunka 4 (**Kontrola prostredia**, ~3 min) musí vypísať `Prostredie je v poriadku.` Overuje
+   testy, to, že program autorov so seedom 1 dá **presne hodnoty z článku**, a to, že naša
+   implementácia dá rovnaké výsledky ako na našom počítači.
+4. Bunka 5 je hlavný beh, bunka 6 vypíše počty hotových behov na seed.
 
-   | `SESSION` | n | seedy | čo beží | odhad pri 12 vCPU |
-   |---|---|---|---|---|
-   | 1 | 5–50 | 1–10 | naša + program autorov | ~1,2 h |
-   | 2 | 100 | 1–5 | naša + program autorov | ~2 h |
-   | 3 | 100 | 6–10 | naša + program autorov | ~2 h |
-   | 4 | 30–100 | 1–10 | naša s výberom jobov ako v programe autorov (`--sampling autori`) | ~2,5 h |
+Experiment je rozdelený na štyri časti (`SESSION` v prvej bunke; predvolene všetky jedna po druhej):
 
-   Odhady sú z behov v `results/colab/` (12 vCPU Xeon 2,2 GHz: 2 seedy pre n = 100 v oboch
-   implementáciách za 49 min). Pri 2 vCPU je to asi 6× dlhšie. Session môžu bežať naraz, ak to
-   účet dovolí; inak jedna po druhej. Session 4 je doplnkový experiment (vysvetlenie malého
-   rozdielu medzi implementáciami) – ak by nebol čas, hlavné výsledky sú v session 1–3.
-4. **Runtime → Run all**, potvrď prístup ku Google Drive.
-5. Počkaj na bunku 4 (**Kontrola prostredia**, ~3 min). Musí vypísať `Prostredie je v poriadku.`
-   Kontroluje aj to, že program autorov so seedom 1 dá **presne hodnoty z článku**. Ak vypíše
-   `NEZHODA` alebo chybu, nič ďalej nespúšťaj.
-6. Bunka 5 je hlavný beh. Nechaj kartu prehliadača otvorenú. Ak sa runtime odpojí, stačí znova
-   **Run all** s rovnakým `SESSION` – hotové behy sa preskočia.
-7. Bunka 6 vypíše počty behov na seed (session 1: 1800, session 2 a 3: 360, session 4: 1080).
+| časť | n | seedy | čo beží | trvanie pri 12 vCPU |
+|---|---|---|---|---|
+| 1 | 5–50 | 1–10 | naša implementácia + program autorov | ~0,6 h |
+| 2 | 100 | 1–5 | naša implementácia + program autorov | ~2 h |
+| 3 | 100 | 6–10 | naša implementácia + program autorov | ~2 h |
+| 4 | 30–100 | 1–10 | naša implementácia s výberom jobov ako v programe autorov (`--sampling autori`) | ~2,2 h |
 
-### Výstupy (Google Drive, priečinok `npfs-mo-povodne/`)
+Časti sa dajú pustiť aj vo viacerých runtime naraz (napr. `SESSION = [1, 4]` a `SESSION = [2, 3]`).
+Výstupy na Drive (priečinok `npfs-mo-povodne/`) sa skopírujú do `results/original/`:
 
 | súbor | obsah |
 |---|---|
-| `iga_ours_session<k>.csv` (+ `_history.csv`) | naša implementácia (stĺpce ako `results/iga_ours.csv`), konvergencia 1. fázy |
+| `iga_ours_session<k>.csv` (+ `_history.csv`) | naša implementácia (stĺpce ako `results/iga_ours.csv`), priebeh 1. fázy |
 | `iga_authors_session<k>.csv` | program autorov (stĺpce ako `reference/iga_authors.csv`) |
 | `iga_ours-sampling-autori_session4.csv` | naša implementácia s výberom jobov ako autori |
-| `info_session<k>.txt` | čas začiatku/konca, CPU, počet jadier |
+| `info_session<k>.txt` | čas začiatku a konca, CPU, počet vCPU |
 
-### Potom
-
-Stiahni celý priečinok `npfs-mo-povodne` z Drive a skopíruj súbory do **`results/original/`**. Potom:
+Potom:
 
 ```bash
 python src/fetch_original.py          # pôvodné inštancie a výsledky článku po inštanciách
-python analysis/analyze_original.py   # tabuľky report/tables/orig_*.tex, grafy report/figures/orig_*.pdf
+python analysis/analyze_original.py   # results/original/analysis/, report/tables/orig_*.tex, report/figures/orig_*.pdf
 ```
 
-Časy v tomto experimente sú z Colabu (obe implementácie na rovnakom type runtime); s článkom
-sa porovnávajú len orientačne (iný procesor, paralelné behy).
+**Náš beh (12. – 13. 11. 2026):** Intel Xeon 2,2 GHz. Časť 1 začala na runtime s 2 vCPU,
+po jeho odpojení pokračovala na runtime s 12 vCPU (seedy 1–5 dobehli na 2 vCPU, seedy 6–10
+na 12 vCPU); časti 2–4 bežali celé na 12 vCPU (`results/original/info_session*.txt`). Kvalitu
+riešení to neovplyvní (rozpočet je počet iterácií), časy v reporte sú preto len zo seedov 6–10,
+ktoré bežali všetky na rovnakom type runtime.
 
-## Predbežný experiment – `n100_seedy.ipynb` (hotové)
+## Predbežný experiment – `n100_seedy.ipynb`
 
-Na našich vygenerovaných inštanciách (`instances/generated/`) sme na notebooku spustili seedy
+Na vlastných vygenerovaných inštanciách (`instances/generated/`) bežali na notebooku seedy
 1–10 pre n ≤ 50 a 1–3 pre n = 100. Seedy 4–10 pre n = 100 dobehli týmto notebookom v Colabe
-(4 session, 11. 11. 2026, 12 vCPU Xeon 2,2 GHz); výsledky sú v [`results/colab/`](../results/colab/)
-a `analysis/analyze_results.py` ich načíta automaticky. Behy z Colabu sa započítavajú do kvality
-riešení, časy v tomto experimente sú len z notebooku.
-
-Notebook je v repozitári kvôli reprodukovateľnosti; znova ho spúšťať netreba.
+(11. 11. 2026, 4 runtime po 12 vCPU, Xeon 2,2 GHz; `SEEDS` v prvej bunke: `[4, 5]`, `[6, 7]`,
+`[8, 9]`, `[10]`). Výsledky sú v [`results/colab/`](../results/colab/) a
+`analysis/analyze_results.py` ich načíta automaticky; do kvality riešení sa započítavajú,
+časy v tomto experimente sú len z notebooku.

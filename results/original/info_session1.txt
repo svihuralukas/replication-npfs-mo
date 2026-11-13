@@ -1,0 +1,5 @@
+2026-11-12T22:08:48.337580 start session1 {'n_min': 5, 'n_max': 50, 'seeds': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 'ours': True, 'authors': True, 'sampling': False} cpu='Intel(R) Xeon(R) CPU @ 2.20GHz' cores=2 python=3.13.18
+2026-11-13T05:10:10.417666 start session1 {'n_min': 5, 'n_max': 50, 'seeds': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 'ours': True, 'authors': True, 'sampling': False} cpu='Intel(R) Xeon(R) CPU @ 2.20GHz' cores=12 python=3.13.16
+2026-11-13T05:46:06.604639 done session1
+2026-11-13T17:15:45.945105 start session1 {'n_min': 5, 'n_max': 50, 'seeds': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 'ours': True, 'authors': True, 'sampling': False} cpu='Intel(R) Xeon(R) CPU @ 2.20GHz' cores=12 python=3.13.16
+2026-11-13T17:16:05.543029 done session1

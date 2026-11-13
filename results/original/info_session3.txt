@@ -1,0 +1,4 @@
+2026-11-13T07:47:35.898069 start session3 {'n_min': 100, 'n_max': 100, 'seeds': [6, 7, 8, 9, 10], 'ours': True, 'authors': True, 'sampling': False} cpu='Intel(R) Xeon(R) CPU @ 2.20GHz' cores=12 python=3.13.16
+2026-11-13T09:50:14.445130 done session3
+2026-11-13T17:16:14.046199 start session3 {'n_min': 100, 'n_max': 100, 'seeds': [6, 7, 8, 9, 10], 'ours': True, 'authors': True, 'sampling': False} cpu='Intel(R) Xeon(R) CPU @ 2.20GHz' cores=12 python=3.13.16
+2026-11-13T17:16:22.622940 done session3

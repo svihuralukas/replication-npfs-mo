@@ -1,0 +1,98 @@
+Program autorov, seed 1: 2160 inštancií
+  IGA0: rovnaké ΣC ako v článku na 2160 z 2160 inštancií
+  IGA+NPS-set: rovnaké ΣC ako v článku na 2160 z 2160 inštancií
+  IGA: rovnaké ΣC ako v článku na 2160 z 2160 inštancií
+
+Spoločné behy: 2160 inštancií, 21600 behov na implementáciu
+  n = 5: seedy [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  n = 10: seedy [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  n = 20: seedy [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  n = 30: seedy [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  n = 50: seedy [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  n = 100: seedy [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  naša (Python): behov lepších než BKV článku 2202
+  autori (C++): behov lepších než BKV článku 1999
+  n = 5: MIP článku = BKV na 360 z 360 inštancií (BKV sú optimá)
+
+IGA0: priemerná rpd po n (naša | autori | článok)
+  n =   5:  3.23 |  3.23 |  3.23
+  n =  10:  4.00 |  4.00 |  4.00
+  n =  20:  2.41 |  2.41 |  2.40
+  n =  30:  1.74 |  1.73 |  1.73
+  n =  50:  1.31 |  1.29 |  1.30
+  n = 100:  1.48 |  1.47 |  1.51
+  celkovo:   2.36 |  2.35 |  2.36
+IGA+NPS-set: priemerná rpd po n (naša | autori | článok)
+  n =   5:  2.68 |  2.68 |  2.68
+  n =  10:  3.40 |  3.40 |  3.39
+  n =  20:  1.91 |  1.90 |  1.90
+  n =  30:  1.31 |  1.29 |  1.31
+  n =  50:  0.89 |  0.88 |  0.90
+  n = 100:  1.16 |  1.15 |  1.17
+  celkovo:   1.89 |  1.88 |  1.89
+IGA: priemerná rpd po n (naša | autori | článok)
+  n =   5:  1.27 |  1.27 |  1.27
+  n =  10:  2.10 |  2.10 |  2.10
+  n =  20:  1.07 |  1.07 |  1.06
+  n =  30:  0.66 |  0.65 |  0.66
+  n =  50:  0.41 |  0.39 |  0.42
+  n = 100:  0.75 |  0.74 |  0.77
+  celkovo:   1.04 |  1.04 |  1.05
+2SA (článok, Tab. 3): n=5: 3.12, n=10: 5.75, n=20: 6.88, n=30: 7.62, n=50: 8.43, n=100: 8.91
+
+Zlepšenie oproti IGA0 [p. b.] (naša | autori | článok):
+  IGA: n=5: 1.96 | 1.96 | 1.96, n=10: 1.90 | 1.90 | 1.90, n=20: 1.34 | 1.34 | 1.34, n=30: 1.08 | 1.08 | 1.06, n=50: 0.89 | 0.89 | 0.88, n=100: 0.73 | 0.73 | 0.74
+    celkovo 1.32 | 1.32 | 1.31
+  IGA+NPS-set: n=5: 0.55 | 0.55 | 0.55, n=10: 0.60 | 0.61 | 0.61, n=20: 0.50 | 0.50 | 0.50, n=30: 0.43 | 0.44 | 0.41, n=50: 0.42 | 0.41 | 0.40, n=100: 0.32 | 0.33 | 0.34
+    celkovo 0.47 | 0.47 | 0.47
+  naša (Python): 2. fáza zlepšila IGA0 v 89.4% behov, NPS-set v 58.4%; IGA lepšie než IGA+NPS-set v 82.8%, horšie v 6.7%
+  autori (C++): 2. fáza zlepšila IGA0 v 89.4% behov, NPS-set v 58.5%; IGA lepšie než IGA+NPS-set v 82.7%, horšie v 6.8%
+
+n = 5, IGA od optima: naša 1.27 %, autori 1.27 %, článok 1.27 %; optimum v 41% | 41% | 41% behov
+
+Naša − autori, rpd [p. b.], pár = inštancia (priemer cez seedy): priemer [95 % CI], Wilcoxon p
+  n = 5: IGA0 0.0000 [0.0000; 0.0000] p = 1 (lepšie 0, rovnaké 360, horšie 0); IGA+NPS-set 0.0000 [0.0000; 0.0000] p = 1 (lepšie 0, rovnaké 360, horšie 0); IGA 0.0000 [0.0000; 0.0000] p = 1 (lepšie 0, rovnaké 360, horšie 0)
+  n = 10: IGA0 0.0000 [0.0000; 0.0000] p = 1 (lepšie 0, rovnaké 360, horšie 0); IGA+NPS-set 0.0006 [-0.0016; 0.0029] p = 0.75 (lepšie 1, rovnaké 357, horšie 2); IGA -0.0005 [-0.0016; 0.0005] p = 0.5 (lepšie 2, rovnaké 357, horšie 1)
+  n = 20: IGA0 0.0038 [-0.0011; 0.0087] p = 0.352 (lepšie 69, rovnaké 211, horšie 80); IGA+NPS-set 0.0116 [-0.0006; 0.0238] p = 0.101 (lepšie 72, rovnaké 205, horšie 83); IGA 0.0008 [-0.0105; 0.0121] p = 0.99 (lepšie 79, rovnaké 205, horšie 76)
+  n = 30: IGA0 0.0061 [-0.0083; 0.0205] p = 0.413 (lepšie 171, rovnaké 1, horšie 188); IGA+NPS-set 0.0170 [-0.0035; 0.0375] p = 0.0622 (lepšie 170, rovnaké 1, horšie 189); IGA 0.0054 [-0.0150; 0.0258] p = 0.508 (lepšie 180, rovnaké 1, horšie 179)
+  n = 50: IGA0 0.0192 [-0.0024; 0.0408] p = 0.074 (lepšie 157, rovnaké 1, horšie 202); IGA+NPS-set 0.0085 [-0.0158; 0.0327] p = 0.494 (lepšie 174, rovnaké 0, horšie 186); IGA 0.0185 [-0.0060; 0.0429] p = 0.119 (lepšie 167, rovnaké 0, horšie 193)
+  n = 100: IGA0 0.0050 [-0.0186; 0.0286] p = 0.621 (lepšie 179, rovnaké 0, horšie 181); IGA+NPS-set 0.0063 [-0.0185; 0.0312] p = 0.639 (lepšie 179, rovnaké 0, horšie 181); IGA 0.0013 [-0.0247; 0.0273] p = 0.801 (lepšie 182, rovnaké 0, horšie 178)
+  n = spolu: IGA0 0.0057 [-0.0002; 0.0116] p = 0.0399 (lepšie 576, rovnaké 933, horšie 651); IGA+NPS-set 0.0073 [0.0003; 0.0144] p = 0.0347 (lepšie 596, rovnaké 923, horšie 641); IGA 0.0042 [-0.0028; 0.0113] p = 0.17 (lepšie 610, rovnaké 923, horšie 627)
+
+Naša implementácia s výberom jobov ako autori (--sampling autori) − program autorov:
+  n = 30, IGA0: rovnomerný výber 0.0061 [-0.0083; 0.0205] p = 0.413 | výber ako autori 0.0134 [-0.0034; 0.0303] p = 0.277
+  n = 30, IGA: rovnomerný výber 0.0054 [-0.0150; 0.0258] p = 0.508 | výber ako autori 0.0225 [-0.0021; 0.0471] p = 0.205
+  n = 50, IGA0: rovnomerný výber 0.0192 [-0.0024; 0.0408] p = 0.074 | výber ako autori 0.0137 [-0.0072; 0.0346] p = 0.502
+  n = 50, IGA: rovnomerný výber 0.0185 [-0.0060; 0.0429] p = 0.119 | výber ako autori 0.0115 [-0.0117; 0.0346] p = 0.392
+  n = 100, IGA0: rovnomerný výber 0.0050 [-0.0186; 0.0286] p = 0.621 | výber ako autori -0.0019 [-0.0275; 0.0238] p = 0.911
+  n = 100, IGA: rovnomerný výber 0.0013 [-0.0247; 0.0273] p = 0.801 | výber ako autori -0.0076 [-0.0351; 0.0200] p = 0.641
+
+Štatistiky rpd IGA po n (priemer, medián, sm. odch., min, max):
+  naša (Python)
+    n =   5: 1.27, 0.45, 1.80, 0.00, 12.40
+    n =  10: 2.10, 1.52, 2.03, 0.00, 9.70
+    n =  20: 1.07, 0.75, 1.16, -1.93, 5.98
+    n =  30: 0.66, 0.41, 0.94, -1.89, 6.51
+    n =  50: 0.41, 0.38, 0.73, -2.35, 3.75
+    n = 100: 0.75, 0.73, 0.73, -1.70, 4.31
+  autori (C++)
+    n =   5: 1.27, 0.45, 1.80, 0.00, 12.40
+    n =  10: 2.10, 1.52, 2.03, 0.00, 9.70
+    n =  20: 1.07, 0.74, 1.16, -1.16, 5.66
+    n =  30: 0.65, 0.40, 0.93, -1.80, 6.19
+    n =  50: 0.39, 0.36, 0.70, -2.35, 3.84
+    n = 100: 0.74, 0.71, 0.70, -1.56, 4.10
+Stabilita medzi seedmi (IGA), sm. odchýlka rpd inštancie | rozsah priemerov seedov:
+  naša (Python): n=5: 0.00 | 1.27–1.27, n=10: 0.00 | 2.10–2.10, n=20: 0.14 | 1.05–1.08, n=30: 0.46 | 0.63–0.68, n=50: 0.50 | 0.38–0.45, n=100: 0.50 | 0.69–0.78
+  autori (C++): n=5: 0.00 | 1.27–1.27, n=10: 0.00 | 2.10–2.10, n=20: 0.13 | 1.04–1.08, n=30: 0.44 | 0.61–0.70, n=50: 0.50 | 0.36–0.43, n=100: 0.49 | 0.72–0.77
+
+Časy zo seedov [6, 7, 8, 9, 10] (10800 behov na implementáciu)
+Priemerný čas IGA [s] po n (naša | autori | článok) a pomer naša/článok:
+  n =   5:    0.22 |    0.06 |    0.02   (10.7×, autori 3.1×)
+  n =  10:    0.30 |    0.23 |    0.07   (4.0×, autori 3.1×)
+  n =  20:    0.73 |    0.76 |    0.24   (3.1×, autori 3.2×)
+  n =  30:    1.45 |    1.62 |    0.54   (2.7×, autori 3.0×)
+  n =  50:    4.04 |    4.80 |    1.91   (2.1×, autori 2.5×)
+  n = 100:   20.70 |   28.16 |   13.15   (1.6×, autori 2.1×)
+  podiel 2. fázy na našom čase: n=5: 0%, n=10: 1%, n=20: 4%, n=30: 7%, n=50: 13%, n=100: 23%
+

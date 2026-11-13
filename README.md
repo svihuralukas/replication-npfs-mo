@@ -69,7 +69,7 @@ python -m pytest tests/                    # testy (143), vrátane zhody s kódo
 python src/fetch_original.py               # inštancie H&N + výsledky článku po inštanciách (z repozitára autorov)
 ```
 
-Experiment (naša implementácia aj program autorov, všetky n, seedy 1–10) beží v Google Colabe:
+Experiment (naša implementácia aj program autorov, všetky n, seedy 1–10) bežal v Google Colabe:
 [colab/README.md](colab/README.md), notebook `colab/povodne_instancie.ipynb`. To isté lokálne
 (Linux/WSL alebo Docker pre program autorov, `reference/README.md`):
 
@@ -101,7 +101,7 @@ python src/run_mip.py --instances "instances/generated/*_05_[0-9][0-9]_[0-9][0-9
 python analysis/verify_exact.py            # presná zhoda deterministických častí s programom autorov
 python analysis/analyze_results.py         # tabuľky, štatistiky, grafy → results/analysis, report/
 
-# 1. etapa (IGA0, results/iga0_check_*.csv) vznikla staršou verziou runnera (commit 56c39a8)
+# prvá kontrola IGA0 (results/iga0_check_*.csv) vznikla staršou verziou runnera (commit 56c39a8)
 python analysis/compare_iga0.py            # porovnanie + Wilcoxonov test
 ```
 
@@ -110,7 +110,24 @@ python analysis/compare_iga0.py            # porovnanie + Wilcoxonov test
 `report/` je samostatný (main.tex, references.bib, tables/, figures/), dá sa nahrať do Overleafu.
 Lokálne: `cd report && latexmk -pdf main.tex` (babel slovak – v Linuxe balík texlive-lang-czechslovak).
 
-## Stav
+## Hlavné výsledky
+
+Pôvodné inštancie H&N, naša implementácia aj program autorov so seedmi 1–10
+(`results/original/analysis/summary.txt`, report `report/main.tex`):
+
+| | naša (Python) | program autorov (C++) | článok |
+|---|---|---|---|
+| priemerná odchýlka od BKV: IGA0 | 2,36 % | 2,35 % | 2,36 % |
+| IGA+NPS-set | 1,89 % | 1,88 % | 1,89 % |
+| IGA | 1,04 % | 1,04 % | 1,05 % |
+| IGA pri n = 5 od optima | 1,27 % | 1,27 % | 1,27 % |
+
+- Program autorov so seedom 1 dá na všetkých 2160 inštanciách presne hodnoty z článku.
+- Naša implementácia dá pri n = 5 vo všetkých 3600 behoch a pri n = 10 v 3592 z 3600 behov presne hodnotu IGA z článku
+  (program autorov s inými seedmi než 1 v 3591 z 3600).
+- Rozdiel naša − program autorov (IGA, pár = inštancia): 0,004 p. b., 95 % CI [−0,003; 0,011], Wilcoxon p = 0,17.
+
+## Overenie po častiach
 
 | Časť | Súbor | Stav |
 |---|---|---|
@@ -121,9 +138,9 @@ Lokálne: `cd report && latexmk -pdf main.tex` (babel slovak – v Linuxe balík
 | NPS-set | `src/nps_set.py` | hotové, presná zhoda s kódom autorov (86 inštancií + konštrukcia na všetkých) |
 | MIP (optimá pre n = 5) | `src/mip.py` | hotové, HiGHS namiesto CPLEX-u; Obr. 3 → 1191 |
 | Predbežný experiment (vlastné inštancie) | `config/experiment.yaml`, `results/`, `reference/iga_authors.csv`, `results/colab/` | hotové: seedy 1–10 pre všetky n |
-| Hlavný experiment (pôvodné inštancie) | `src/fetch_original.py`, `colab/povodne_instancie.ipynb`, `results/original/` | pripravené, beží v Colabe |
-| Analýza | `analysis/analyze_results.py` (vlastné), `analysis/analyze_original.py` (pôvodné) | hotové / čaká na dáta |
-| Report | `report/main.tex` | doplniť výsledky na pôvodných inštanciách |
+| Hlavný experiment (pôvodné inštancie) | `src/fetch_original.py`, `colab/povodne_instancie.ipynb`, `results/original/` | hotové: seedy 1–10 pre všetky n, obe implementácie |
+| Analýza | `analysis/analyze_original.py` (pôvodné), `analysis/analyze_results.py` (vlastné) | hotové |
+| Report | `report/main.tex` | hotové |
 
 ## Štruktúra
 
