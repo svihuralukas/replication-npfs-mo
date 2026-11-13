@@ -70,16 +70,27 @@ python src/fetch_original.py               # inštancie H&N + výsledky článku
 ```
 
 Experiment (naša implementácia aj program autorov, všetky n, seedy 1–10) bežal v Google Colabe:
-[colab/README.md](colab/README.md), notebook `colab/povodne_instancie.ipynb`. To isté lokálne
-(Linux/WSL alebo Docker pre program autorov, `reference/README.md`):
+[colab/README.md](colab/README.md), notebook `colab/povodne_instancie.ipynb`, výsledky
+v `results/original/`. Analýza z nich vygeneruje všetky čísla, tabuľky a grafy reportu:
 
 ```bash
-python src/run_experiments.py --instances "instances/original/*.txt" --seeds 1 2 3 4 5 6 7 8 9 10     --out results/original/iga_ours_local.csv
-python3 reference/run_authors.py --instances "instances/original/*.txt" --seeds 1 2 3 4 5 6 7 8 9 10     --out results/original/iga_authors_local.csv
-# doplnkový experiment: výber jobov v perturbácii ako v programe autorov (src/iga.py)
-python src/run_experiments.py --instances "instances/original/*.txt" --min-n 30 --sampling autori     --seeds 1 2 3 4 5 6 7 8 9 10 --out results/original/iga_ours-sampling-autori_local.csv
+python analysis/analyze_original.py        # → results/original/analysis, report/tables/orig_*, report/figures/orig_*
+```
 
-python analysis/analyze_original.py        # tabuľky a grafy → results/original/analysis, report/
+To isté lokálne (Linux/WSL alebo Docker pre program autorov, `reference/README.md`) do
+samostatného priečinka, aby sa nemiešalo s výsledkami z Colabu (trvá desiatky hodín):
+
+```bash
+python src/run_experiments.py --instances "instances/original/*.txt" --seeds 1 2 3 4 5 6 7 8 9 10 \
+    --out results/original_local/iga_ours_local.csv
+python3 reference/run_authors.py --instances "instances/original/*.txt" --seeds 1 2 3 4 5 6 7 8 9 10 \
+    --out results/original_local/iga_authors_local.csv
+# doplnkový experiment: výber jobov v perturbácii ako v programe autorov (src/iga.py)
+python src/run_experiments.py --instances "instances/original/*.txt" --min-n 30 --sampling autori \
+    --seeds 1 2 3 4 5 6 7 8 9 10 --out results/original_local/iga_ours-sampling-autori_local.csv
+
+python analysis/analyze_original.py --results results/original_local \
+    --texdir results/original_local/tables --figdir results/original_local/figures
 ```
 
 ### Predbežný experiment: vlastné inštancie
@@ -94,7 +105,8 @@ python src/run_experiments.py --seeds 1 2 3 --out results/iga_ours.csv
 python src/run_experiments.py --seeds 4 5 6 7 8 9 10 --max-n 50 --out results/iga_ours.csv
 # to isté s programom autorov (Linux/WSL alebo Docker – reference/README.md)
 python3 reference/run_authors.py --instances "instances/generated/*.txt" --seeds 1 2 3 --out reference/iga_authors.csv
-python3 reference/run_authors.py --instances "instances/generated/*.txt" --seeds 4 5 6 7 8 9 10 --max-n 50     --out reference/iga_authors.csv
+python3 reference/run_authors.py --instances "instances/generated/*.txt" --seeds 4 5 6 7 8 9 10 --max-n 50 \
+    --out reference/iga_authors.csv
 # seedy 4–10 pre n = 100 v Google Colabe: colab/README.md (výsledky v results/colab/)
 python src/run_mip.py --instances "instances/generated/*_05_[0-9][0-9]_[0-9][0-9].txt" --out results/mip.csv  # optimá n = 5
 
@@ -124,7 +136,7 @@ Pôvodné inštancie H&N, naša implementácia aj program autorov so seedmi 1–
 
 - Program autorov so seedom 1 dá na všetkých 2160 inštanciách presne hodnoty z článku.
 - Naša implementácia dá pri n = 5 vo všetkých 3600 behoch a pri n = 10 v 3592 z 3600 behov presne hodnotu IGA z článku
-  (program autorov s inými seedmi než 1 v 3591 z 3600).
+  (program autorov pri n = 10 v 3591 z 3600).
 - Naša implementácia je oproti programu autorov systematicky nepatrne horšia: IGA o 0,004 p. b. (95 % CI [−0,003; 0,011],
   p = 0,17), IGA0 a IGA+NPS-set o 0,006–0,007 p. b. (p ≈ 0,04); na vlastných inštanciách o 0,009–0,012 p. b. (p ≤ 0,009).
   Je to vyše stokrát menej než prínos 2. fázy; výber jobov v perturbácii to nespôsobuje.

@@ -24,6 +24,11 @@ a behy na pôvodných inštanciách sú bit po bite rovnaké ako v Colabe.
 
 ## Spustenie cez Docker (Windows bez WSL distribúcie, Linux, macOS)
 
+Príkazy sa spúšťajú z koreňa repozitára. **V Git Bash na Windows** treba pred každý
+`docker run` dať `MSYS_NO_PATHCONV=1` (ako nižšie), inak Git Bash prepíše cesty v kontajneri
+(`/npfs-mo` → `C:/Program Files/Git/npfs-mo`) a príkaz zlyhá s
+`cd: /npfs-mo: No such file or directory`. V Linuxe, macOS a PowerShelli sa prefix vynechá.
+
 ```bash
 # obraz s kompilátorom a Boostom
 docker build -t npfsmo-build - <<'EOF'
@@ -35,15 +40,19 @@ EOF
 
 # kód autorov vedľa tohto repozitára a kompilácia
 git clone https://github.com/mrpritt/npfs-mo ../npfs-mo && (cd ../npfs-mo && git checkout bde1bc3 && git submodule update --init)
-docker run --rm -v "$(pwd)/../npfs-mo:/npfs-mo" npfsmo-build bash -c \
+MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd)/../npfs-mo:/npfs-mo" npfsmo-build bash -c \
     "cd /npfs-mo && cmake -DCMAKE_BUILD_TYPE=Release -DBOOST_ROOT=/usr -S src -B build && cmake --build build -j4"
 
-# behy (z koreňa repozitára); v Git Bash na Windows treba pred príkaz dať MSYS_NO_PATHCONV=1
-docker run --rm -v "$(pwd)/../npfs-mo:/npfs-mo" -v "$(pwd):/proj" -w /proj npfsmo-build \
+# behy na vlastných inštanciách (predbežný experiment)
+MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd)/../npfs-mo:/npfs-mo" -v "$(pwd):/proj" -w /proj npfsmo-build \
     python3 reference/run_authors.py --npfsmo /npfs-mo/build/npfsmo \
     --instances "instances/generated/*.txt" --seeds 1 2 3 --out reference/iga_authors.csv
-# pôvodné inštancie (najprv python src/fetch_original.py), napr. seed 1 = hodnoty z článku
-docker run --rm -v "$(pwd)/../npfs-mo:/npfs-mo" -v "$(pwd):/proj" -w /proj npfsmo-build     python3 reference/run_authors.py --npfsmo /npfs-mo/build/npfsmo     --instances "instances/original/*.txt" --seeds 1 --out results/original/iga_authors_local.csv
+
+# pôvodné inštancie (najprv python src/fetch_original.py): seed 1 musí dať hodnoty z článku
+# (data/authors/table3-iga.csv); výstup mimo results/original/, aby sa nemiešal s výsledkami z Colabu
+MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd)/../npfs-mo:/npfs-mo" -v "$(pwd):/proj" -w /proj npfsmo-build \
+    python3 reference/run_authors.py --npfsmo /npfs-mo/build/npfsmo \
+    --instances "instances/original/*.txt" --seeds 1 --out results/original_local/iga_authors_seed1.csv
 ```
 
 Ak `docker build` zlyhá na stiahnutí `ubuntu:24.04` (nedostupný Docker Hub), program sa dá
