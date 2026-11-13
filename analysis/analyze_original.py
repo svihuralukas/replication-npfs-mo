@@ -370,7 +370,7 @@ def main() -> None:
                   caption=r"Vplyv výberu odstránených jobov v perturbácii: rozdiel rpd naša implementácia "
                           r"$-$ program autorov v p.\,b.\ (95\,\% CI, Wilcoxon $p$) s rovnomerným výberom "
                           r"(ako v článku) a s výberom, ktorý napodobňuje program autorov.",
-                  label="tab:orig_sampling", colspec="r|rr|rr|rr|rr", size=r"\scriptsize",
+                  label="tab:orig_sampling", colspec="r|rr|rr|rr|rr", size=r"\scriptsize\setlength{\tabcolsep}{2pt}",
                   header=[r" & \multicolumn{4}{c|}{IGA0} & \multicolumn{4}{c}{IGA}",
                           r" & \multicolumn{2}{c|}{rovnomerný} & \multicolumn{2}{c|}{ako autori} & "
                           r"\multicolumn{2}{c|}{rovnomerný} & \multicolumn{2}{c}{ako autori}",
@@ -397,7 +397,7 @@ def main() -> None:
                       r"(inštancie $\times$ seedy 1--10); záporné minimum znamená beh lepší než BKV článku. "
                       r"Stabilita: priemerná smerodajná odchýlka rpd jednej inštancie cez seedy a rozsah "
                       r"priemeru cez 360 inštancií pri jednotlivých seedoch (naša implementácia).",
-              label="tab:orig_rpd_stats", colspec="r|rrrrr|rrrrr|rr", size=r"\scriptsize",
+              label="tab:orig_rpd_stats", colspec="r|rrrrr|rrrrr|rr", size=r"\scriptsize\setlength{\tabcolsep}{3pt}",
               header=[r" & \multicolumn{5}{c|}{naša (Python)} & \multicolumn{5}{c|}{autori (C++)} & "
                       r"\multicolumn{2}{c}{stabilita (naša)}",
                       r"$n$ & priemer & medián & sm.\,odch. & min & max & priemer & medián & sm.\,odch. & min & "

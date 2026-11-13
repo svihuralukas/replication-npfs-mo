@@ -14,6 +14,14 @@ inštanciách (predbežný experiment); behy na pôvodných inštanciách sú v 
 
 Stĺpce CSV sú opísané v hlavičke `run_authors.py`; sú rovnaké ako v `results/iga_ours.csv`.
 
+## Načo je Docker
+
+Program autorov je C++ pre Linux (Boost, CMake). Na Windows bez WSL distribúcie ho kompilujeme
+a spúšťame v Dockeri. Na hlavný experiment Docker netreba – Colab notebook ho kompiluje priamo
+(`colab/README.md`) – a v Linuxe/WSL stačí postup z hlavného `README.md`. Overené
+13. 11. 2026 (Docker 29.9.3): obraz sa zostaví od nuly, program dá na Obr. 3 optimum 1191
+a behy na pôvodných inštanciách sú bit po bite rovnaké ako v Colabe.
+
 ## Spustenie cez Docker (Windows bez WSL distribúcie, Linux, macOS)
 
 ```bash
@@ -26,7 +34,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 EOF
 
 # kód autorov vedľa tohto repozitára a kompilácia
-git clone https://github.com/mrpritt/npfs-mo ../npfs-mo && (cd ../npfs-mo && git submodule update --init)
+git clone https://github.com/mrpritt/npfs-mo ../npfs-mo && (cd ../npfs-mo && git checkout bde1bc3 && git submodule update --init)
 docker run --rm -v "$(pwd)/../npfs-mo:/npfs-mo" npfsmo-build bash -c \
     "cd /npfs-mo && cmake -DCMAKE_BUILD_TYPE=Release -DBOOST_ROOT=/usr -S src -B build && cmake --build build -j4"
 
@@ -34,6 +42,11 @@ docker run --rm -v "$(pwd)/../npfs-mo:/npfs-mo" npfsmo-build bash -c \
 docker run --rm -v "$(pwd)/../npfs-mo:/npfs-mo" -v "$(pwd):/proj" -w /proj npfsmo-build \
     python3 reference/run_authors.py --npfsmo /npfs-mo/build/npfsmo \
     --instances "instances/generated/*.txt" --seeds 1 2 3 --out reference/iga_authors.csv
+# pôvodné inštancie (najprv python src/fetch_original.py), napr. seed 1 = hodnoty z článku
+docker run --rm -v "$(pwd)/../npfs-mo:/npfs-mo" -v "$(pwd):/proj" -w /proj npfsmo-build     python3 reference/run_authors.py --npfsmo /npfs-mo/build/npfsmo     --instances "instances/original/*.txt" --seeds 1 --out results/original/iga_authors_local.csv
 ```
+
+Ak `docker build` zlyhá na stiahnutí `ubuntu:24.04` (nedostupný Docker Hub), program sa dá
+skompilovať rovnakými príkazmi priamo v Ubuntu 24.04 alebo vo WSL, prípadne v Colabe.
 
 V WSL/Linuxe s nainštalovanými balíkmi stačí postup z hlavného `README.md`.

@@ -1,6 +1,6 @@
 # Replikácia: IGA pre flow shop s chýbajúcimi operáciami (NPFS-MO)
 
-Semestrálne zadanie 1 z predmetu **Metódy optimalizácie** – *Analýza a experimentálne riešenie
+Semestrálne zadanie 1 z predmetu **Moderné prístupy v optimalizácii** – *Analýza a experimentálne riešenie
 optimalizačnej úlohy*, **Variant A (replikácia výsledkov)**.
 
 Tím: Lukáš Švihura, Dominik Keil, Ján Hrbál.
@@ -39,7 +39,7 @@ Python 3.10–3.13.
 python -m venv .venv
 .venv\Scripts\activate          # Windows
 # source .venv/bin/activate     # Linux / macOS
-pip install -r requirements.txt
+pip install -r requirements.txt     # presné verzie z nášho prostredia: requirements-lock.txt
 ```
 
 Referenčný C++ program autorov (voliteľné, len na porovnanie; v Linuxe alebo vo WSL):
@@ -125,7 +125,9 @@ Pôvodné inštancie H&N, naša implementácia aj program autorov so seedmi 1–
 - Program autorov so seedom 1 dá na všetkých 2160 inštanciách presne hodnoty z článku.
 - Naša implementácia dá pri n = 5 vo všetkých 3600 behoch a pri n = 10 v 3592 z 3600 behov presne hodnotu IGA z článku
   (program autorov s inými seedmi než 1 v 3591 z 3600).
-- Rozdiel naša − program autorov (IGA, pár = inštancia): 0,004 p. b., 95 % CI [−0,003; 0,011], Wilcoxon p = 0,17.
+- Naša implementácia je oproti programu autorov systematicky nepatrne horšia: IGA o 0,004 p. b. (95 % CI [−0,003; 0,011],
+  p = 0,17), IGA0 a IGA+NPS-set o 0,006–0,007 p. b. (p ≈ 0,04); na vlastných inštanciách o 0,009–0,012 p. b. (p ≤ 0,009).
+  Je to vyše stokrát menej než prínos 2. fázy; výber jobov v perturbácii to nespôsobuje.
 
 ## Overenie po častiach
 
