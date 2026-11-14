@@ -6,7 +6,7 @@ instances:
   n: [5, 10, 20, 30, 50, 100]
   m: [5, 10, 20, 30]
   r: [0.2, 0.3, 0.4]
-  per_group: 30            # znížiť, ak bude výpočet príliš pomalý (zdokumentovať v reporte)
+  per_group: 30
 
 algorithm:
   d_max: 8                 # d = min(d_max, ceil(0.8 n))  – v kóde autorov (8n + 9) // 10

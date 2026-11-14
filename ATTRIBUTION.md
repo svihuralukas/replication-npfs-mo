@@ -1,7 +1,7 @@
 # Pôvod jednotlivých častí riešenia
 
 Zadanie vyžaduje, aby bolo zrejmé, čo vytvorili autori článku, čo pochádza z externých zdrojov
-a čo sme vytvorili alebo upravili my. Tento súbor priebežne dopĺňame.
+a čo sme vytvorili alebo upravili my.
 
 ## Od autorov článku (Ritt & Rossit, 2024)
 
