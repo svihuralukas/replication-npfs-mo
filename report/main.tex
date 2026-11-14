@@ -35,9 +35,9 @@ istých dátach sme s desiatimi seedmi spustili aj pôvodný C++ program autorov
 autorov dáva na všetkých 2160 inštanciách presne hodnoty z článku. Naša implementácia dosahuje
 priemernú odchýlku IGA od najlepších známych hodnôt 1,04\,\% (článok 1,05\,\%), 2.~fáza zlepší
 permutačné riešenie o 1,32 p.\,b.\ (článok 1,31) a NPS-set o 0,47 p.\,b.\ (článok 0,47).
-Pri $n=5$ dáva vo všetkých behoch presne výsledky článku. Od programu autorov je naša
-implementácia systematicky nepatrne horšia, o 0,004--0,012 p.\,b.\ podľa variantu a sady
-inštancií, čo je vyše stokrát menej než prínos 2.~fázy. Hlavné tvrdenia článku sa potvrdili.
+Pri $n=5$ dáva vo všetkých behoch presne výsledky článku. Oproti programu autorov je priemerná
+odchýlka našej implementácie vyššia o 0,004--0,012 p.\,b.\ podľa variantu a sady inštancií.
+Hlavné tvrdenia článku sa potvrdili.
 \end{abstract}
 
 % =====================================================================================
@@ -73,7 +73,7 @@ $\mathcal{O}=\{o_{ij} : p_{ij}>0\}$.
 
 \paragraph{Rozhodovacie premenné a priestor riešení.} Riešením je $m$-tica permutácií
 $\pi=(\pi_1,\dots,\pi_m)$, kde $\pi_i$ je poradie jobov na stroji $i$. Takých riešení je
-$(n!)^m$. \emph{Permutačné} rozvrhy ($\pi_1=\dots=\pi_m$) sú z nich len malá časť, presne $n!$.
+$(n!)^m$, z toho $n!$ \emph{permutačných} ($\pi_1=\dots=\pi_m$).
 Keďže každý job ide cez stroje vždy v rovnakom poradí, je prípustná každá $m$-tica permutácií
 (v grafe závislostí nevznikne cyklus) a časy sa dajú vypočítať priamo. Ide teda o
 \emph{white-box} úlohu, ktorej účelovú funkciu poznáme explicitne. Algoritmus pracuje
@@ -150,22 +150,25 @@ Tab.~4 a Obr.~4 (časy), Tab.~5 (MIP) a Tab.~6 (varianty algoritmu).
 
 \begin{sloppypar}
 Všetko sme napísali v Pythone a časovo náročné časti kompilujeme cez Numba \cite{Lam2015}
-(kód a verzie knižníc sú v repozitári https://github.com/svihuralukas/replication-npfs-mo). Kód je rozdelený do modulov: \texttt{evaluate.py}
+(kód a verzie knižníc sú v repozitári \url{https://github.com/svihuralukas/replication-npfs-mo}). Kód je rozdelený do modulov: \texttt{evaluate.py}
 (výpočet $C_{ij}$, $C_{\max}$ a $\Csum$ pre permutačné aj nepermutačné rozvrhy), \texttt{iga.py}
 (1.~fáza), \texttt{nonperm.py} (2.~fáza), \texttt{nps\_set.py} (NPS-set), \texttt{mip.py} (MIP
 model) a \texttt{run\_experiments.py} (paralelné spúšťanie experimentov). Nepermutačný rozvrh
 ukladáme ako maticu $m\times n$, v ktorej každý riadok je poradie jobov na jednom stroji.
 \end{sloppypar}
 
-\paragraph{Čo sme doplnili z kódu autorov.} Niektoré detaily v článku chýbajú. Zistili sme ich
-z verejného kódu autorov \cite{RittRossit2024code}. Kód sme nekopírovali, ale napísali vlastný
-podľa opisu, a správnosť sme overili presnou zhodou výsledkov. Ide o štartovacie riešenie (joby
-zoradené zostupne podľa súčtu časov a postupne vkladané), pravidlo pri zhode (vyhráva
-najzadnejšia pozícia), lokálne prehľadávanie v 1.~fáze po pozíciách a $\mathit{limit}+1$
-iterácií. V 2.~fáze sa joby berú podľa indexu a vybratý job sa vloží vždy, aj keď to výsledok
-zhorší, lebo o prijatí sa rozhoduje až po celom kroku. Kandidátov skúšame v pevnom poradí
-(straight$(k)$, potom anticipácie od posledného stroja, pre $k=n,\dots,1$, a nakoniec
-oneskorenia) a pri zhode vyhráva prvý.
+\paragraph{Čo sme doplnili z kódu autorov.} Nasledujúce detaily článok neuvádza. Zistili sme
+ich z verejného kódu autorov \cite{RittRossit2024code}, kód sme nekopírovali, ale napísali
+vlastný podľa opisu, a správnosť sme overili presnou zhodou výsledkov (zoznam je aj v hlavičkách
+\texttt{src/iga.py}, \texttt{nonperm.py} a \texttt{nps\_set.py}). V 1.~fáze: (a) štartovacie
+riešenie -- joby zoradené zostupne podľa súčtu procesných časov a postupne greedy vkladané;
+(b) pravidlo pri zhode -- ak má vloženie jobu na viac pozícií rovnaké $\Csum$ aj $C_{\max}$,
+vyhráva najzadnejšia, napr.\ pri zhode pozícií 2 a 4 ide job na pozíciu 4;
+(c) lokálne prehľadávanie berie joby podľa ich pozície v aktuálnej permutácii;
+(d) vykoná sa $\mathit{limit}+1$ iterácií. V 2.~fáze: (e) joby sa berú podľa indexu a vybratý
+job sa vloží vždy, aj keď to výsledok zhorší, lebo o prijatí sa rozhoduje až po prechode
+všetkými jobmi; (f) kandidátov skúšame v pevnom poradí (straight$(k)$, potom anticipácie od
+posledného stroja, pre $k=n,\dots,1$, a nakoniec oneskorenia) a pri zhode vyhráva prvý.
 
 \paragraph{Výber jobov v perturbácii.} Článok hovorí o $d$ náhodne vybratých jobov, preto ich
 vyberáme rovnomerne. Program autorov používa Floydov algoritmus výberu s posunom o jedna: v kroku
@@ -261,15 +264,15 @@ istým testom, ale párom je jeden beh, keďže všetky tri varianty pochádzaj�
 
 \paragraph{Reprodukcia článku programom autorov.} Program autorov so seedom 1 dal na všetkých
 2160 pôvodných inštanciách presne tie isté hodnoty IGA, IGA0 aj IGA+NPS-set ako podrobné
-výsledky článku \cite{RittRossit2024code}. Výsledky článku sú teda úplne reprodukovateľné
-a program autorov je spoľahlivá referencia pre našu implementáciu.
+výsledky článku \cite{RittRossit2024code}. Výsledky článku sú teda reprodukovateľné a program
+autorov používame ako referenciu pre našu implementáciu.
 
 \paragraph{Kvalita riešení.} Tab.~\ref{tab:orig_rpd_by_n} a Obr.~\ref{fig:orig_rpd} ukazujú
 priemerné odchýlky od BKV článku podľa počtu jobov, plné tabuľky v rozložení Tab.~3 a 6 článku
-sú v prílohe (Tab.~\ref{tab:orig_rpd_iga}--\ref{tab:orig_rpd_nps}). Všetky tri stĺpce sa
-prakticky zhodujú: celkový priemer IGA je 1,04\,\% u nás, 1,04\,\% v programe autorov a 1,05\,\%
-v článku, pri IGA0 2,36 / 2,35 / 2,36\,\% a pri IGA+NPS-set 1,89 / 1,88 / 1,89\,\%. Krivky na
-Obr.~\ref{fig:orig_rpd} sa prekrývajú. Pri všetkých veľkostiach platí poradie variantov
+sú v prílohe (Tab.~\ref{tab:orig_rpd_iga}--\ref{tab:orig_rpd_nps}). Celkový priemer IGA je
+1,04\,\% u nás, 1,04\,\% v programe autorov a 1,05\,\% v článku, pri IGA0 2,36 / 2,35 / 2,36\,\%
+a pri IGA+NPS-set 1,89 / 1,88 / 1,89\,\%. Pri žiadnom $n$ a variante sa naše priemery
+v Tab.~\ref{tab:orig_rpd_by_n} nelíšia od článku o viac než 0,03 p.\,b. Pri všetkých $n$ platí poradie variantov
 z článku: IGA $<$ IGA+NPS-set $<$ IGA0. Pri $n=5$ dáva naša implementácia presne hodnotu IGA
 z článku vo všetkých 3600 behoch, pri $n=10$ v 3592 z 3600 (program autorov v 3591
 z 3600).
@@ -281,7 +284,7 @@ z 3600).
 \includegraphics[width=.75\textwidth]{figures/orig_rpd_by_n.pdf}
 \caption{Pôvodné inštancie: priemerná odchýlka od BKV článku podľa $n$ pre všetky tri varianty:
 naša implementácia (plná čiara), program autorov (čiarkovaná), oboje priemer cez seedy 1--10,
-a hodnoty z článku so seedom 1 (bodkovaná). Čiary sa takmer úplne prekrývajú.}
+a hodnoty z článku so seedom 1 (bodkovaná).}
 \label{fig:orig_rpd}
 \end{figure}
 
@@ -289,16 +292,15 @@ a hodnoty z článku so seedom 1 (bodkovaná). Čiary sa takmer úplne prekrýva
 a ani raz ho nezhoršila. NPS-set zlepšil permutáciu v 58,4\,\% behov. IGA bolo lepšie než
 IGA+NPS-set v 82,8\,\% behov a horšie v 6,7\,\%. Všetky tri rozdiely sú štatisticky významné
 (Wilcoxon, $p<10^{-10}$). Zlepšenie oproti IGA0 so zväčšujúcim sa $n$ klesá, pri IGA z 1,96
-p.\,b.\ pre $n=5$ na 0,73 p.\,b.\ pre $n=100$ (v článku 1,96 a 0,74). Pri väčšom počte jobov
-totiž na jeden job pripadá menej medzier, ktoré sa dajú zaplniť.
+p.\,b.\ pre $n=5$ na 0,73 p.\,b.\ pre $n=100$ (v článku 1,96 a 0,74).
 
 \paragraph{Optimá pre $n=5$.} Tab.~\ref{tab:orig_opt_n5} porovnáva IGA s optimami. IGA je
 v priemere 1,27\,\% od optima a optimum nájde v 41\,\% behov, presne ako v článku. S počtom
 strojov sa to zhoršuje: odchýlka rastie z 0,3--0,6\,\% pri $m=5$ na 1,4--2,8\,\% pri $m=30$
 a podiel nájdených optím klesá zo 77--87\,\% na 10--17\,\%. Pri $n=5$ sa IGA správa
-deterministicky: 1.~fáza s 3000 iteráciami spoľahlivo nájde najlepšiu zo 120 možných permutácií
-(na vlastných inštanciách overené hrubou silou) a zvyšnú odchýlku spôsobuje malé okolie
-2.~fázy, ktorá job posúva len o jednu pozíciu.
+deterministicky: 1.~fáza s 3000 iteráciami nájde najlepšiu zo 120 možných permutácií
+(na vlastných inštanciách overené hrubou silou) a zvyšná odchýlka je daná okolím 2.~fázy,
+v ktorom anticipácia a oneskorenie posúvajú job na časti strojov o jednu pozíciu.
 
 \input{tables/orig_opt_n5}
 
@@ -311,7 +313,7 @@ Pythonu na beh), od $n=20$ je však na rovnakom hardvéri rýchlejšia než prog
 $n=100$ 20,7 vs.\ 28,2\,s) vďaka zrýchleniu 2.~fázy, ktorá u nás tvorí 23\,\% času.
 Obr.~\ref{fig:orig_conv} ukazuje, ako sa vyvíja 1.~fáza. Pri $n\le 20$ nájde najlepšie riešenie
 v prvých percentách rozpočtu a ďalej sa nemení, pri $n\ge 50$ sa zlepšuje počas celého
-rozpočtu. Väčší rozpočet by teda pomohol práve pri veľkých inštanciách, čo sedí s experimentom
+rozpočtu. Väčší rozpočet by teda mohol zlepšiť výsledky pri $n\ge 50$, čo sedí s experimentom
 s IGA$^+$ v článku (Tab.~5).
 
 \begin{figure}[ht]
@@ -334,8 +336,8 @@ priemer a priemer dvíha pár horších behov (maximum 3,7--12,4\,\%). Záporné
 $n\ge 20$ znamená, že niektoré behy našli lepšie riešenie než BKV článku: dvadsať behov
 (desať seedov v oboch implementáciách) zlepšilo BKV na 726 inštanciách s $n\ge 20$, v priemere
 o 0,57\,\%. Pri $n=5$ dávajú všetky seedy rovnaký výsledok, pri $n=10$ až na 3 inštancie. Pri väčších inštanciách sa rpd
-jednej inštancie medzi seedmi líši v priemere o 0,14--0,50 p.\,b., priemer skupiny sa však
-mení len o stotiny (Obr.~\ref{fig:orig_seed}). Jeden seed, ktorý použili autori, teda stačí
+jednej inštancie medzi seedmi líši v priemere o 0,14--0,50 p.\,b., priemer cez inštancie
+s rovnakým $n$ najviac o 0,09 p.\,b.\ (Obr.~\ref{fig:orig_seed}). Jeden seed, ktorý použili autori, teda stačí
 na priemery skupín, ale nie na jednotlivé inštancie.
 
 \input{tables/orig_rpd_stats}
@@ -363,43 +365,40 @@ s Tab.~3 a 6 článku priamo, skupinu po skupine
 (Tab.~\ref{tab:orig_rpd_iga}--\ref{tab:orig_rpd_nps}). Priemer skupiny sa od článku líši
 v priemere o 0,04 p.\,b.\ a najviac o 0,25 p.\,b., čo zodpovedá rozptylu medzi seedmi
 (Obr.~\ref{fig:orig_seed}). Spearmanova korelácia 72 skupín s článkom je 0,98--0,99. Prínos 2.~fázy je 1,32 p.\,b.\ (v článku 1,31) a NPS-set 0,47 p.\,b.\ (0,47).
-Potvrdili sa všetky kvalitatívne tvrdenia článku: IGA0 je o 1--2 p.\,b.\ horšie, NPS-set
-pomôže o 0,3--0,5 p.\,b., 2.~fáza viac a IGA je výrazne lepší než 2SA (8,9 vs.\ 0,75\,\% pri
-$n=100$). Rovnako ako v článku je naše IGA horšie než 2SA na 36 z 2160 inštancií (20 s $n=5$, 15 s $n=10$
+Potvrdili sa všetky kvalitatívne tvrdenia článku: NPS-set zníži rpd IGA0 o 0,3--0,6 p.\,b.,
+2.~fáza o 0,7--2,0 p.\,b.\ a IGA má nižšiu rpd než 2SA (pri $n=100$ 0,75 vs.\ 8,91\,\%). Rovnako ako v článku je naše IGA horšie než 2SA na 36 z 2160 inštancií (20 s $n=5$, 15 s $n=10$
 a jedna s $n=20$), a sú to presne tie isté inštancie. Časy sú 1,6- až 4-krát dlhšie než v článku (pri $n=5$ desaťkrát, pozri vyššie).
 
 \paragraph{Program autorov na rovnakých dátach.} Toto porovnanie hovorí najviac, lebo obe
 implementácie riešia tie isté inštancie s tými istými seedmi a BKV (Tab.~\ref{tab:orig_tests}).
-Pri jednotlivých $n$ nie je rozdiel významný na hladine 0,05, za všetky inštancie spolu je
-však naša implementácia mierne horšia: pri IGA0 o 0,006 p.\,b.\ ($p=0{,}040$), pri IGA+NPS-set
+Pri jednotlivých $n$ nie je rozdiel významný na hladine 0,05. Za všetky inštancie spolu je
+naša priemerná rpd vyššia pri IGA0 o 0,006 p.\,b.\ ($p=0{,}040$), pri IGA+NPS-set
 o 0,007 p.\,b.\ ($p=0{,}035$, interval spoľahlivosti neobsahuje nulu) a pri IGA o 0,004 p.\,b.\
-($[-0{,}003;\,0{,}011]$, $p=0{,}17$). Na vlastných inštanciách je rozdiel rovnakého smeru
-významný pri všetkých troch variantoch (IGA: 0,012 p.\,b., $[0{,}004;\,0{,}019]$, $p=0{,}001$;
-IGA0 a IGA+NPS-set $p\le 0{,}009$), hlavne pri $n\ge 30$. Keďže sa smer zopakoval na dvoch
-nezávislých sadách inštancií, nejde o náhodu: naša implementácia je systematicky nepatrne
-horšia, o 0,004--0,012 p.\,b. Prakticky je to zanedbateľné, vyše stokrát menej než prínos 2.~fázy.
+($[-0{,}003;\,0{,}011]$, $p=0{,}17$). Na vlastných inštanciách má rozdiel rovnaké znamienko
+a je významný pri všetkých troch variantoch (IGA: 0,012 p.\,b., $[0{,}004;\,0{,}019]$, $p=0{,}001$;
+IGA0 a IGA+NPS-set $p\le 0{,}009$), hlavne pri $n\ge 30$. Na oboch sadách inštancií je teda
+naša rpd vyššia o 0,004--0,012 p.\,b.; pre porovnanie, prínos 2.~fázy je 1,32 p.\,b.
 
 \input{tables/orig_tests}
 
 \paragraph{Je príčinou výber jobov?} Jediný rozdiel v rozdelení náhodných rozhodnutí, ktorý sme
 v kóde našli, je výber odstránených jobov (Sekcia~\ref{sec:impl}). Overili sme ho experimentom:
 našu implementáciu sme pre $n\ge 30$ spustili s výberom, ktorý napodobňuje program autorov
-(Tab.~\ref{tab:orig_sampling}). Rozdiel voči programu autorov sa tým nezmenšil (pri $n=30$ je
-dokonca väčší, pri $n=100$ záporný) a žiadny nie je významný. Tento detail teda malý rozdiel
-nevysvetľuje a na výsledky nemá merateľný vplyv. Príčinu malého systematického rozdielu
-sme nenašli.
+(Tab.~\ref{tab:orig_sampling}). Rozdiel IGA voči programu autorov je potom pre $n=30$, 50
+a 100 rovný 0,022, 0,011 a $-0{,}008$ p.\,b.\ (s rovnomerným výberom 0,005, 0,018 a 0,001)
+a žiadny nie je významný ($p\ge 0{,}2$). Výber jobov teda rozdiel nevysvetľuje a jeho vplyv
+na výsledky sme nenamerali. Príčinu rozdielu 0,004--0,012 p.\,b.\ sme nenašli.
 
 \input{tables/orig_sampling}
 
 % =====================================================================================
 \section{Diskusia a možné zdroje rozdielov}
-\paragraph{Čo sa podarilo.} Algoritmus je v článku opísaný dosť podrobne na to, aby sa dal
-naprogramovať. Keď sme doplnili pár detailov z kódu autorov (Sekcia~\ref{sec:impl}), dostali
-sme deterministické časti úplne rovnaké a pri $n=5$ aj rovnaké celé výsledky ako v článku.
-Na pôvodných inštanciách sa naše priemery zhodujú s článkom na stotiny percenta a platia všetky
-kvalitatívne závery článku: 2.~fáza funguje a je lepšia než NPS-set, samotná 1.~fáza je
-o 1--2 p.\,b.\ slabšia a na malých inštanciách zaostáva IGA za optimom o 1--2\,\%, pričom
-rozdiel rastie s $m$.
+\paragraph{Čo sa podarilo.} Podľa opisu v článku sa algoritmus dal naprogramovať. Po doplnení
+detailov (a)--(f) z kódu autorov (Sekcia~\ref{sec:impl}) sme dostali deterministické časti
+rovnaké ako program autorov a pri $n=5$ aj rovnaké celé výsledky ako v článku. Na pôvodných
+inštanciách sa naše priemery podľa $n$ líšia od článku najviac o 0,03 p.\,b.\ a platia všetky
+kvalitatívne závery článku: 2.~fáza zníži rpd viac než NPS-set (1,32 vs.\ 0,47 p.\,b.)
+a pri $n=5$ je IGA od optima v priemere 1,27\,\%, pričom odchýlka rastie s $m$.
 
 \paragraph{Odkiaľ sa berú rozdiely.}
 (1) \emph{BKV} určujú absolútne hodnoty odchýlok. Na vlastných inštanciách preto absolútne
@@ -407,19 +406,17 @@ rozdiel rastie s $m$.
 ovplyvnené nie sú, lebo všetky varianty pochádzajú z toho istého behu a delia sa tou istou BKV.
 (2) \emph{Inštancie} -- vlastné inštancie vygenerované rovnakým postupom zmenili čísla
 jednotlivých skupín (napr.\ rpd IGA0 pri $n=5$ 3,48 vs.\ 3,23\,\%), nie trendy.
-(3) \emph{Detaily, ktoré článok neuvádza.} Bez kódu autorov by sme pravidlá pri zhode, poradie
-kandidátov a prijímanie celého kroku v 2.~fáze museli odhadnúť. Pri malých inštanciách
-s množstvom zhôd by to výsledky posunulo; to, že pri $n=5$ dostávame presne hodnoty článku,
-ukazuje, že ich máme rovnako. Nerovnomerný výber jobov v programe autorov je naopak detail,
-ktorý na výsledky vplyv nemá. (4) \emph{Náhoda.} Jeden seed v článku stačí na priemery skupín
-(líšia sa najviac o 0,25 p.\,b.), ale nie na jednotlivé inštancie: dvadsať behov našlo lepšie
-riešenie než BKV článku na tretine inštancií. (5) \emph{Hardvér a jazyk} ovplyvňujú len čas.
+(3) \emph{Detaily, ktoré článok neuvádza} ((a)--(f)), by sme bez kódu autorov museli odhadnúť;
+zhoda pri $n=5$ ukazuje, že ich máme rovnako. Pri výbere jobov sme vplyv nenamerali.
+(4) \emph{Náhoda.} rpd inštancie sa medzi seedmi mení so smerodajnou odchýlkou
+0,14--0,50 p.\,b.\ a dvadsať behov našlo lepšie riešenie než BKV článku na 726 z 2160
+inštancií. (5) \emph{Hardvér a jazyk} ovplyvňujú len čas.
 Rozpočet je daný počtom iterácií, takže kvalita od rýchlosti nezávisí.
 
-\paragraph{Zaujímavosť navyše.} IGA+NPS-set je v 6,7\,\% behov lepší než IGA. 2.~fáza sa
+\paragraph{IGA+NPS-set lepší než IGA.} IGA+NPS-set je v 6,7\,\% behov lepší než IGA. 2.~fáza sa
 zastaví v prvom lokálnom minime, kým NPS-set vie posunúť operáciu aj o viac pozícií naraz.
-Ak by sa 2.~fáza spúšťala z výsledku NPS-set, mohlo by to priniesť malé zlepšenie. Článok
-túto kombináciu neskúša.
+Spustenie 2.~fázy z výsledku NPS-set by preto mohlo výsledok zlepšiť. Článok ani my túto
+kombináciu neskúšame.
 
 % =====================================================================================
 \section{Obmedzenia experimentov}
@@ -432,21 +429,21 @@ túto kombináciu neskúša.
   a len zo seedov 6--10; predbežného experimentu z notebooku. S článkom sa dajú porovnať len
   orientačne.
 \item Implementácie sme porovnávali párovo po inštanciách s desiatimi seedmi. Rozdiely menšie
-  ako približne 0,01 p.\,b.\ (šírka intervalov spoľahlivosti) tým spoľahlivo rozlíšiť nevieme.
+  ako približne 0,01 p.\,b.\ (polovičná šírka 95\,\% intervalov spoľahlivosti) tým na hladine
+  0,05 rozlíšiť nevieme.
 \end{itemize}
 
 % =====================================================================================
 \section{Záver}
-Replikácia sa podarila. Pôvodný program autorov na pôvodných inštanciách presne reprodukuje
-výsledky článku. Naša nezávislá implementácia v Pythone dáva v deterministických častiach
-presne to isté a pri $n=5$ aj rovnaké celé výsledky. V priemeroch sa s článkom zhoduje na
-stotiny percenta (IGA 1,04 vs.\ 1,05\,\%) a od programu autorov je horšia len nepatrne
-(o 0,004--0,012 p.\,b.). Potvrdili sme hlavné tvrdenia článku: nepermutačná 2.~fáza zlepší permutačné riešenia
-o 1,3 p.\,b., funguje lepšie než NPS-set (0,5 p.\,b.) a na malých inštanciách je IGA
-v priemere 1,3\,\% od optima. Nerovnomerný výber jobov v programe autorov, ktorý článok
-neopisuje, na výsledky vplyv nemá. Práca ukazuje, že na replikáciu je užitočné mať kód aj
-dáta autorov a viac seedov než jeden: až s desiatimi seedmi bolo vidieť, že jeden beh nestačí
-na jednotlivé inštancie, a na tretine inštancií sme našli lepšie riešenia než BKV článku.
+Replikácia sa podarila. Program autorov so seedom 1 dáva na všetkých 2160 pôvodných
+inštanciách hodnoty z článku. Naša implementácia v Pythone dáva v deterministických častiach
+rovnaké výsledky ako program autorov a pri $n=5$ hodnoty IGA z článku vo všetkých 3600 behoch.
+Priemerná rpd IGA je 1,04\,\% (článok 1,05\,\%), oproti programu autorov je naša rpd vyššia
+o 0,004--0,012 p.\,b. Potvrdili sme hlavné tvrdenia článku: 2.~fáza zníži rpd o 1,32 p.\,b.,
+NPS-set o 0,47 p.\,b.\ a pri $n=5$ je IGA od optima 1,27\,\%. Výber jobov v programe autorov,
+ktorý článok neopisuje, rozdiel nevysvetľuje. Na replikáciu sme potrebovali kód autorov
+(detaily (a)--(f)) aj ich inštancie s BKV; desať seedov ukázalo, že rpd inštancie sa medzi
+seedmi mení so smerodajnou odchýlkou až 0,50 p.\,b.
 
 \bibliographystyle{plain}
 \bibliography{references}

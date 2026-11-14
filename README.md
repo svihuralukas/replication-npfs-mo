@@ -137,9 +137,9 @@ Pôvodné inštancie H&N, naša implementácia aj program autorov so seedmi 1–
 - Program autorov so seedom 1 dá na všetkých 2160 inštanciách presne hodnoty z článku.
 - Naša implementácia dá pri n = 5 vo všetkých 3600 behoch a pri n = 10 v 3592 z 3600 behov presne hodnotu IGA z článku
   (program autorov pri n = 10 v 3591 z 3600).
-- Naša implementácia je oproti programu autorov systematicky nepatrne horšia: IGA o 0,004 p. b. (95 % CI [−0,003; 0,011],
+- Priemerná odchýlka našej implementácie je oproti programu autorov vyššia: IGA o 0,004 p. b. (95 % CI [−0,003; 0,011],
   p = 0,17), IGA0 a IGA+NPS-set o 0,006–0,007 p. b. (p ≈ 0,04); na vlastných inštanciách o 0,009–0,012 p. b. (p ≤ 0,009).
-  Je to vyše stokrát menej než prínos 2. fázy; výber jobov v perturbácii to nespôsobuje.
+  Prínos 2. fázy je pre porovnanie 1,32 p. b.; výber jobov v perturbácii rozdiel nevysvetľuje.
 
 ## Overenie po častiach
 
@@ -147,7 +147,7 @@ Pôvodné inštancie H&N, naša implementácia aj program autorov so seedmi 1–
 |---|---|---|
 | Generátor a načítanie inštancií | `src/instance.py`, `src/generate_instances.py` | hotové, overené voči dátam autorov |
 | Výpočet C, C<sub>max</sub>, ΣC<sub>j</sub> | `src/evaluate.py` | hotové, zhoda s kódom autorov (Obr. 1, Obr. 3, 14 inštancií) |
-| IGA fáza 1 (IGA0) | `src/iga.py` | hotové, konštrukcia a local search presne ako autori (144 inšt.), IGA0 štatisticky bez rozdielu (Wilcoxon p = 0,81) |
+| IGA fáza 1 (IGA0) | `src/iga.py` | hotové, konštrukcia a local search presne ako autori (144 inšt.); IGA0 od programu autorov +0,006 p. b. (pôvodné inštancie, p = 0,040) |
 | IGA fáza 2 (non-permutation) | `src/nonperm.py` | hotové, z permutácie autorov presne ten istý rozvrh (86 inštancií zo všetkých 72 skupín) |
 | NPS-set | `src/nps_set.py` | hotové, presná zhoda s kódom autorov (86 inštancií + konštrukcia na všetkých) |
 | MIP (optimá pre n = 5) | `src/mip.py` | hotové, HiGHS namiesto CPLEX-u; Obr. 3 → 1191 |
