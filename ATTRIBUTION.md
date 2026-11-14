@@ -51,4 +51,19 @@ a čo sme vytvorili alebo upravili my. Tento súbor priebežne dopĺňame.
 
 ## Použitie nástrojov generatívnej AI
 
-*Doplní tím: ktoré nástroje, na čo a v akom rozsahu.*
+Pri práci sme používali nástroje generatívnej AI ako asistenta pri programovaní, analýze aj písaní:
+
+- **Kód a repozitár:** štruktúra repozitára a README, generátor a loader inštancií, výpočet ΣC,
+  implementácia IGA a NPS-set, testy zhody s programom autorov, čítanie C++ kódu autorov
+  (napr. výber jobov v perturbácii), skripty na stiahnutie inštancií a beh programu autorov,
+  Colab notebooky a Docker postup.
+- **Analýza:** skripty na štatistické vyhodnotenie (Wilcoxonov test, intervaly spoľahlivosti),
+  tabuľky a grafy.
+- **Report:** návrh a úprava textu, interpretácia výsledkov, LaTeX úpravy.
+- **Kontrola:** review pull requestov, nezávislé prepočty výsledkov, overenie reprodukovateľnosti
+  a kontrola, či čísla, tabuľky a grafy v reporte sedia s dátami a s článkom.
+
+Návrhy AI sme vždy kontrolovali: spúšťaním testov, porovnaním s článkom a s programom autorov
+a vzájomným review. Niektoré tvrdenia navrhnuté AI sa pri review ukázali ako nepresné (napr.
+formulácia rozdielu voči programu autorov) a opravili sme ich. Rozhodnutia o postupe experimentov
+a interpretácii výsledkov robil tím a za obsah zodpovedáme my.
