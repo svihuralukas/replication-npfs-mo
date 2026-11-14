@@ -150,7 +150,7 @@ Tab.~4 a Obr.~4 (časy), Tab.~5 (MIP) a Tab.~6 (varianty algoritmu).
 
 \begin{sloppypar}
 Všetko sme napísali v Pythone a časovo náročné časti kompilujeme cez Numba \cite{Lam2015}
-(knižnice a ich verzie sú v \texttt{requirements.txt}). Kód je rozdelený do modulov: \texttt{evaluate.py}
+(kód a verzie knižníc sú v repozitári https://github.com/svihuralukas/replication-npfs-mo). Kód je rozdelený do modulov: \texttt{evaluate.py}
 (výpočet $C_{ij}$, $C_{\max}$ a $\Csum$ pre permutačné aj nepermutačné rozvrhy), \texttt{iga.py}
 (1.~fáza), \texttt{nonperm.py} (2.~fáza), \texttt{nps\_set.py} (NPS-set), \texttt{mip.py} (MIP
 model) a \texttt{run\_experiments.py} (paralelné spúšťanie experimentov). Nepermutačný rozvrh
@@ -193,6 +193,8 @@ prvé lokálne prehľadávanie a NPS-set z konštrukcie sa zhodujú na všetkýc
 2.~fázu a NPS-set spustíme z permutácie, ktorú našiel program autorov, dostaneme na 86
 inštanciách zo všetkých 72 skupín presne ten istý rozvrh (\texttt{results/exact\_check.csv}).
 Spolu máme 143 automatických testov.
+
+\paragraph{Použitie generatívnej AI.} Pri práci sme používali nástroje generatívnej AI. Bližší popis použitých nástrojov a ich účelu obsahuje súbor {\texttt{ATTRIBUTION.md}} v našom repozitári.
 
 % =====================================================================================
 \section{Rozdiely oproti pôvodnému článku}
