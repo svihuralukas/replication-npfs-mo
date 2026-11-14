@@ -282,14 +282,20 @@ def fig_convergence(hist: pd.DataFrame, df: pd.DataFrame, path: Path) -> None:
     plt.close(fig)
 
 
-def fig_seed_box(df: pd.DataFrame, path: Path) -> None:
-    """Rozdelenie priemernej rpd IGA pri jednotlivých seedoch (priemer cez inštancie danej n)."""
+def fig_seed_box(df: pd.DataFrame, path: Path, centered: bool = False) -> None:
+    """Rozdelenie priemernej rpd IGA pri jednotlivých seedoch (priemer cez inštancie danej n).
+
+    centered=True: od priemeru každého seedu sa odpočíta priemer cez všetky seedy oboch
+    implementácií pri danom n, takže boxy sú okolo nuly a ich šírka je dobre viditeľná.
+    """
     fig, ax = plt.subplots(figsize=(6, 3.2))
     data, pos, cols = [], [], []
     for k, n in enumerate(NS):
+        sub = df[df.n == n]
+        ref = sub.groupby(["impl", "seed"])["rpd_iga"].mean().mean() if centered else 0.0
         for off, impl, c in ((-.18, "ours", "#4f81bd"), (.18, "authors", "#9bbb59")):
-            s = df[(df.impl == impl) & (df.n == n)].groupby("seed")["rpd_iga"].mean()
-            data.append(s.values)
+            s = sub[sub.impl == impl].groupby("seed")["rpd_iga"].mean()
+            data.append(s.values - ref)
             pos.append(k + off)
             cols.append(c)
     bp = ax.boxplot(data, positions=pos, widths=.3, patch_artist=True, showfliers=True)
@@ -297,7 +303,11 @@ def fig_seed_box(df: pd.DataFrame, path: Path) -> None:
         patch.set_facecolor(c)
     ax.set_xticks(range(len(NS)), [str(n) for n in NS])
     ax.set_xlabel("počet jobov n")
-    ax.set_ylabel("rpd IGA, priemer cez inštancie [%]")
+    if centered:
+        ax.axhline(0, color="grey", lw=.8)
+        ax.set_ylabel("odchýlka od priemeru [p. b.]")
+    else:
+        ax.set_ylabel("rpd IGA, priemer cez inštancie [%]")
     ax.legend(bp["boxes"][:2], [IMPLS["ours"], IMPLS["authors"]], fontsize=7)
     ax.grid(alpha=.3, axis="y")
     fig.tight_layout()

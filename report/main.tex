@@ -160,7 +160,7 @@ ukladáme ako maticu $m\times n$, v ktorej každý riadok je poradie jobov na je
 \paragraph{Čo sme doplnili z kódu autorov.} Nasledujúce detaily článok neuvádza. Zistili sme
 ich z verejného kódu autorov \cite{RittRossit2024code}, kód sme nekopírovali, ale napísali
 vlastný podľa opisu, a správnosť sme overili presnou zhodou výsledkov (zoznam je aj v hlavičkách
-\texttt{src/iga.py}, \texttt{nonperm.py} a \texttt{nps\_set.py}). V 1.~fáze: (a) štartovacie
+\texttt{src/iga.py} a \texttt{nonperm.py}). V 1.~fáze: (a) štartovacie
 riešenie -- joby zoradené zostupne podľa súčtu procesných časov a postupne greedy vkladané;
 (b) pravidlo pri zhode -- ak má vloženie jobu na viac pozícií rovnaké $\Csum$ aj $C_{\max}$,
 vyhráva najzadnejšia, napr.\ pri zhode pozícií 2 a 4 ide job na pozíciu 4;
@@ -284,7 +284,7 @@ z 3600).
 \includegraphics[width=.75\textwidth]{figures/orig_rpd_by_n.pdf}
 \caption{Pôvodné inštancie: priemerná odchýlka od BKV článku podľa $n$ pre všetky tri varianty:
 naša implementácia (plná čiara), program autorov (čiarkovaná), oboje priemer cez seedy 1--10,
-a hodnoty z článku so seedom 1 (bodkovaná).}
+a hodnoty z článku so seedom 1 (bodkovaná). Čiary sa prekrývajú (rozdiel najviac 0,03 p.\,b.).}
 \label{fig:orig_rpd}
 \end{figure}
 
@@ -326,7 +326,7 @@ s $r=0{,}3$, $m=20$ a cez seedy).}\label{fig:orig_conv}
 \begin{minipage}{.48\textwidth}\centering
 \includegraphics[width=\textwidth]{figures/orig_time_scatter.pdf}
 \caption{Čas behu na inštanciu (priemer cez seedy 6--10) v Colabe oproti času v článku
-(i7-13700), ako Obr.~4 článku.}\label{fig:orig_time}
+(i7-13700), podobne ako Obr.~4 v článku.}\label{fig:orig_time}
 \end{minipage}
 \end{figure}
 
@@ -345,8 +345,8 @@ na priemery skupín, ale nie na jednotlivé inštancie.
 \begin{figure}[ht]
 \centering
 \includegraphics[width=.65\textwidth]{figures/orig_seed_box.pdf}
-\caption{Priemerná rpd IGA pri jednotlivých seedoch (priemer cez 360 inštancií s daným $n$,
-rozdelenie cez 10 seedov).}\label{fig:orig_seed}
+\caption{Vplyv seedu na rpd IGA: priemer seedu cez 360 inštancií s daným $n$ mínus priemer
+cez všetky seedy oboch implementácií pri tomto $n$ (box = 10 seedov).}\label{fig:orig_seed}
 \end{figure}
 
 \paragraph{Predbežný experiment na vlastných inštanciách.} Na vlastných inštanciách
@@ -429,7 +429,7 @@ kombináciu neskúšame.
   a len zo seedov 6--10; predbežného experimentu z notebooku. S článkom sa dajú porovnať len
   orientačne.
 \item Implementácie sme porovnávali párovo po inštanciách s desiatimi seedmi. Rozdiely menšie
-  ako približne 0,01 p.\,b.\ (polovičná šírka 95\,\% intervalov spoľahlivosti) tým na hladine
+  ako približne 0,007 p.\,b.\ (polovičná šírka 95\,\% intervalov spoľahlivosti) tým na hladine
   0,05 rozlíšiť nevieme.
 \end{itemize}
 

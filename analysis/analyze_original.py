@@ -184,13 +184,13 @@ def fig_time_vs_paper(df: pd.DataFrame, paper: pd.DataFrame, path: Path) -> None
     for impl, (mk, c) in marks.items():
         t = df[df.impl == impl].groupby("instance")["time"].mean()
         x = paper.loc[t.index, "time"]
-        ax.scatter(x, t, s=5, marker=mk, color=c, alpha=.45, label=IMPLS[impl] + " (Colab)")
+        ax.scatter(x, t, s=5, marker=mk, color=c, alpha=.45, label=IMPLS[impl])
     lim = [paper["time"].min() / 2, df["time"].max() * 2]
     ax.plot(lim, lim, "k-", lw=.8, label="rovnaký čas")
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlabel("čas IGA v článku [s]")
-    ax.set_ylabel("čas nášho behu [s]")
+    ax.set_ylabel("čas behu v Colabe [s]")
     ax.grid(alpha=.3, which="both", lw=.3)
     ax.legend(fontsize=7, markerscale=2)
     fig.tight_layout()
@@ -440,7 +440,7 @@ def main() -> None:
     # ---------------- grafy
     fig_rpd_by_n(df, pp, figdir / "orig_rpd_by_n.pdf")
     fig_time_vs_paper(dt, paper, figdir / "orig_time_scatter.pdf")
-    fig_seed_box(df, figdir / "orig_seed_box.pdf")
+    fig_seed_box(df, figdir / "orig_seed_box.pdf", centered=True)
     if hist_files:
         hist = pd.concat([pd.read_csv(p) for p in hist_files], ignore_index=True)
         fig_convergence(hist.drop_duplicates(["instance", "seed", "iteration"]), df,
